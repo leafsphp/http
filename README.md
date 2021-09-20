@@ -1,7 +1,7 @@
 <!-- markdownlint-disable no-inline-html -->
 <p align="center">
   <br><br>
-  <img src="https://leaf-docs.netlify.app/images/logo.png" height="100"/>
+  <img src="https://leafphp.netlify.app/assets/img/leaf3-logo.png" height="100"/>
   <h1 align="center">Leaf HTTP Module</h1>
   <br><br>
 </p>
