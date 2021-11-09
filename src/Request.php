@@ -402,6 +402,7 @@ class Request
     public static function getUrl()
     {
         $url = static::getScheme() . '://' . static::getHost();
+
         if ((static::getScheme() === 'https' && static::getPort() !== 443) || (static::getScheme() === 'http' && static::getPort() !== 80)) {
             $url .= ":" . static::getPort();
         }
