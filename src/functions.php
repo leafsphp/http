@@ -25,18 +25,3 @@ if (!function_exists('response')) {
         return new \Leaf\Http\Response();
     }
 }
-
-if (!function_exists('setHeader')) {
-    /**
-     * Set a response header
-     *
-     * @param string|array $key The header key
-     * @param string $value Header value
-     * @param bool $replace Replace header if exists
-     * @param mixed|null $code Status code
-     */
-    function setHeader($key, $value = "", $replace = true, $code = 200)
-    {
-        app()->headers()->set($key, $value, $replace, $code);
-    }
-}
