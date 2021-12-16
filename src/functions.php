@@ -8,7 +8,7 @@ if (!function_exists('request')) {
      */
     function request($data = null)
     {
-        if ($data) return \Leaf\Http\Request::get($data);
+        if ($data !== null) return \Leaf\Http\Request::get($data);
         return new \Leaf\Http\Request();
     }
 }
@@ -21,7 +21,7 @@ if (!function_exists('response')) {
      */
     function response($data = null)
     {
-        if ($data) return \Leaf\Http\Response::json($data);
+        if ($data !== null) return \Leaf\Http\Response::json($data);
         return new \Leaf\Http\Response();
     }
 }
