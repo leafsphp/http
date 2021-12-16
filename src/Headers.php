@@ -111,6 +111,14 @@ class Headers
     }
 
     /**
+     * Set the content-type to xml
+     */
+    public static function contentXml($code = 200): void
+    {
+        self::set("Content-Type", "application/xml", true, $code ?? self::$httpCode);
+    }
+
+    /**
      * Set the content-type to json
      */
     public static function contentJSON($code = 200): void
