@@ -107,7 +107,7 @@ class Response
             $dataToPrint = ["data" => $data, "code" => $code];
 
             if ($useMessage) {
-                $dataToPrint = ["data" => $data, "message" => isset(self::$messages[$code]) ? self::$messages[$code] : $code];
+                $dataToPrint = ["data" => $data, "message" => self::$messages[$code] ?? $code];
             }
         } else {
             $dataToPrint = $data;
@@ -123,7 +123,7 @@ class Response
     public static function throwErr($error, int $code = 500, bool $useMessage = false)
     {
         $dataToPrint = ["error" => $error, "code" => $code];
-        if ($useMessage) $dataToPrint = ["error" => $error, "message" => isset(self::$messages[$code]) ? self::$messages[$code] : $code];
+        if ($useMessage) $dataToPrint = ["error" => $error, "message" => self::$messages[$code] ?? $code];
 
         Headers::contentJSON($code);
         echo json_encode($dataToPrint);
@@ -156,7 +156,7 @@ EOT;
      * @param string|null $value Header value
      * @return string Header value
      */
-    public static function header($name, $value = null)
+    public static function header(string $name, string $value = null): string
     {
         if (!is_null($value)) Headers::set($name, $value);
         return Headers::get($name);
@@ -179,7 +179,7 @@ EOT;
      * @param string $value If string, the value of cookie
      * @param array $options Settings for cookie
      */
-    public static function setCookie($name, $value, $options = [])
+    public static function setCookie($name, string $value, array $options = [])
     {
         Cookie::set($name, $value, $options);
     }
@@ -191,7 +191,7 @@ EOT;
      * @param string $value The value of cookie
      * @param string $expire When the cookie expires. Default: 7 days
      */
-    public static function simpleCookie($name, $value, $expire = "7 days")
+    public static function simpleCookie(string $name, string $value, string $expire = "7 days")
     {
         Cookie::simpleCookie($name, $value, $expire);
     }
@@ -201,7 +201,7 @@ EOT;
      *
      * @param string $name The name of the cookie
      */
-    public static function deleteCookie($name)
+    public static function deleteCookie(string $name)
     {
         Cookie::unset($name);
     }
@@ -212,10 +212,10 @@ EOT;
      * This method prepares this response to return an HTTP Redirect response
      * to the HTTP client.
      *
-     * @param string $url    The redirect destination
-     * @param int    $status The redirect HTTP status code
+     * @param string $url The redirect destination
+     * @param int $status The redirect HTTP status code
      */
-    public static function redirect($url, $status = 302)
+    public static function redirect(string $url, int $status = 302)
     {
         Headers::status($status);
         Headers::set('Location', $url);
@@ -227,9 +227,9 @@ EOT;
      * @param int $status
      * @return string|null
      */
-    public static function getMessageForCode($status)
+    public static function getMessageForCode(int $status): ?string
     {
-        return isset(self::$messages[$status]) ? self::$messages[$status] : null;
+        return self::$messages[$status] ?? null;
     }
 
     /********************************************************************************
