@@ -129,6 +129,32 @@ class Response
         echo json_encode($dataToPrint);
     }
 
+
+    /**
+     * Output plain text
+     * 
+     * @param string $file Path to the file to download
+     * @param string|null $name The of the file as shown to user
+     * @param int $code The response status code
+     */
+    public static function download(string $file, string $name = null, int $code = 200)
+    {
+        if (!file_exists($file)) {
+            trigger_error("$file not found. Confirm your file path.");
+        }
+        
+        if ($name === null) $name = basename($file);
+
+        Headers::status($code);
+        Headers::set([
+            'Content-Length' => filesize($file),
+            'Content-Disposition' => "attachment; filename=$name",
+        ]);
+        
+        readfile($file);
+        exit;
+    }
+
     /**
      * Throw an error and break the application
      */
