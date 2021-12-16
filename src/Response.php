@@ -94,6 +94,18 @@ class Response
     }
 
     /**
+     * Output plain text
+     * 
+     * @param mixed $data The data to output
+     * @param int $code The response status code
+     */
+    public static function plain($data, int $code = 200)
+    {
+        Headers::contentPlain($code);
+        echo $data;
+    }
+
+    /**
      * Output json encoded data with an HTTP code/message
      * 
      * @param mixed $data The data to output
