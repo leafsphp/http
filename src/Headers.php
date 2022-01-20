@@ -69,10 +69,16 @@ class Headers
     /**
      * Set a new header
      */
-    public static function set($key, string $value = "", $replace = true, $httpCode = null): void
+    public static function set($key, string $value = "", $replace = true, int $httpCode = 200): void
     {
         if (!is_array($key)) {
-            header("$key: $value", $replace, $httpCode ?? self::$httpCode);
+            $code = ($httpCode || self::$httpCode);
+
+            if (!$code) {
+                header("$key: $value", $replace);
+            } else {
+                header("$key: $value", $replace, $code);
+            }
         } else {
             foreach ($key as $header => $headerValue) {
                 self::set($header, $headerValue, $replace, $httpCode);
