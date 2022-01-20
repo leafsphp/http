@@ -72,7 +72,7 @@ class Headers
     public static function set($key, string $value = "", $replace = true, int $httpCode = 200): void
     {
         if (!is_array($key)) {
-            $code = ($httpCode || self::$httpCode);
+            $code = $httpCode ?? self::$httpCode;
 
             if (!$code) {
                 header("$key: $value", $replace);
