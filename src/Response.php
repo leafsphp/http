@@ -106,6 +106,19 @@ class Response
     }
 
     /**
+     * Output xml text
+     *
+     * @param string $data The data to output
+     * @param int $code The response status code
+     */
+    public static function xml($data, int $code = 200)
+    {
+        Headers::contentXml($code);
+        echo $data;
+    }
+
+
+    /**
      * Output json encoded data with an HTTP code/message
      * 
      * @param mixed $data The data to output
