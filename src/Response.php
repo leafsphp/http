@@ -301,7 +301,7 @@ EOT;
      */
     public static function lastModified(int $time)
     {
-        Headers::lastModified($time);
+        return Cache::lastModified($time);
     }
 
     /**
@@ -321,7 +321,7 @@ EOT;
      */
     public static function etag(string $value, string $type = "strong")
     {
-        Headers::etag($value, $type);
+        return Cache::etag($value, $type);
     }
 
     /**
@@ -339,6 +339,6 @@ EOT;
      */
     public static function expires($time)
     {
-        Headers::expires($time);
+        return Cache::expires($time);
     }
 }
