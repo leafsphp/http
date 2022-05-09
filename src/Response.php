@@ -15,9 +15,14 @@ namespace Leaf\Http;
 class Response
 {
     /**
+     * @var array
+     */
+    public $headers = [];
+
+    /**
      * @var int HTTP status code
      */
-    protected static $status;
+    protected static $status = 200;
 
     /**
      * @var array HTTP response codes and messages
