@@ -20,72 +20,14 @@ class Response
     public $headers = [];
 
     /**
+     * @var string
+     */
+    protected $content = '';
+
+    /**
      * @var int HTTP status code
      */
     protected static $status = 200;
-
-    /**
-     * @var array HTTP response codes and messages
-     */
-    protected static $messages = [
-        //Informational 1xx
-        100 => '100 Continue',
-        101 => '101 Switching Protocols',
-        //Successful 2xx
-        200 => '200 OK',
-        201 => '201 Created',
-        202 => '202 Accepted',
-        203 => '203 Non-Authoritative Information',
-        204 => '204 No Content',
-        205 => '205 Reset Content',
-        206 => '206 Partial Content',
-        226 => '226 IM Used',
-        //Redirection 3xx
-        300 => '300 Multiple Choices',
-        301 => '301 Moved Permanently',
-        302 => '302 Found',
-        303 => '303 See Other',
-        304 => '304 Not Modified',
-        305 => '305 Use Proxy',
-        306 => '306 (Unused)',
-        307 => '307 Temporary Redirect',
-        //Client Error 4xx
-        400 => '400 Bad Request',
-        401 => '401 Unauthorized',
-        402 => '402 Payment Required',
-        403 => '403 Forbidden',
-        404 => '404 Not Found',
-        405 => '405 Method Not Allowed',
-        406 => '406 Not Acceptable',
-        407 => '407 Proxy Authentication Required',
-        408 => '408 Request Timeout',
-        409 => '409 Conflict',
-        410 => '410 Gone',
-        411 => '411 Length Required',
-        412 => '412 Precondition Failed',
-        413 => '413 Request Entity Too Large',
-        414 => '414 Request-URI Too Long',
-        415 => '415 Unsupported Media Type',
-        416 => '416 Requested Range Not Satisfiable',
-        417 => '417 Expectation Failed',
-        418 => '418 I\'m a teapot',
-        422 => '422 Unprocessable Entity',
-        423 => '423 Locked',
-        426 => '426 Upgrade Required',
-        428 => '428 Precondition Required',
-        429 => '429 Too Many Requests',
-        431 => '431 Request Header Fields Too Large',
-        //Server Error 5xx
-        500 => '500 Internal Server Error',
-        501 => '501 Not Implemented',
-        502 => '502 Bad Gateway',
-        503 => '503 Service Unavailable',
-        504 => '504 Gateway Timeout',
-        505 => '505 HTTP Version Not Supported',
-        506 => '506 Variant Also Negotiates',
-        510 => '510 Not Extended',
-        511 => '511 Network Authentication Required'
-    ];
 
     /**
      * Output plain text
@@ -93,10 +35,13 @@ class Response
      * @param mixed $data The data to output
      * @param int $code The response status code
      */
-    public static function plain($data, int $code = 200)
+    public function plain($data, int $code = 200)
     {
-        Headers::contentPlain($code);
-        echo $data;
+        $this->status = $code;
+        $this->headers['Content-Type'] = 'text/plain';
+        $this->content = $data;
+
+        return $this;
     }
 
     /**
@@ -105,10 +50,13 @@ class Response
      * @param string $data The data to output
      * @param int $code The response status code
      */
-    public static function xml($data, int $code = 200)
+    public function xml($data, int $code = 200)
     {
-        Headers::contentXml($code);
-        echo $data;
+        $this->status = $code;
+        $this->headers['Content-Type'] = 'application/xml';
+        $this->content = $data;
+
+        return $this;
     }
 
     /**
@@ -145,6 +93,7 @@ class Response
     public static function download(string $file, string $name = null, int $code = 200)
     {
         if (!file_exists($file)) {
+            Headers::contentHtml();
             trigger_error("$file not found. Confirm your file path.");
         }
         
@@ -161,30 +110,45 @@ class Response
     }
 
     /**
-     * Throw an error and break the application
+     * Output some data and break the application
+     * 
+     * @param mixed $error The data to output
+     * @param int $code The Http status code
      */
-    public static function throwErr($error, int $code = 500, bool $useMessage = false)
+    public function exit($error, int $code = 500)
     {
-        $dataToPrint = ["error" => $error, "code" => $code];
-        if ($useMessage) $dataToPrint = ["error" => $error, "message" => self::$messages[$code] ?? $code];
+        $this->status = $code;
 
-        Headers::contentJSON($code);
-        echo json_encode($dataToPrint);
+        if (is_array($error)) {
+            $this->headers['Content-Type'] = 'application/json';
+            $this->content = json_encode($error);
+        } else {
+            $this->content = $error;
+        }
+
+        $this->send();
+
         exit();
     }
 
-    public static function page(string $file, int $code = null)
+    public function page(string $file, int $code = null)
     {
-        Headers::contentHtml($code);
-        require $file;
+        $this->status = $code;
+        $this->headers['Content-Type'] = 'text/html';
+        $this->content = require $file;
+
+        return $this;
     }
 
-    public static function markup(String $markup, int $code = null)
+    public function markup(String $markup, int $code = null)
     {
-        Headers::contentHtml($code);
-        echo <<<EOT
+        $this->status = $code;
+        $this->headers['Content-Type'] = 'application/xml';
+        $this->content = <<<EOT
 $markup
 EOT;
+
+        return $this;
     }
 
     /**
