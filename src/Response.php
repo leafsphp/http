@@ -183,16 +183,15 @@ EOT;
     }
 
     /**
-     * Get and set header
+     * set header
      * 
-     * @param string $name Header name
+     * @param string|array $name Header name
      * @param string|null $value Header value
-     * @return string Header value
      */
-    public static function header(string $name, string $value = null): string
+    public function withHeader($name, ?string $value = '', $replace = true, int $httpCode = 200)
     {
-        if (!is_null($value)) Headers::set($name, $value);
-        return Headers::get($name);
+        Headers::set($name, $value, $replace, $httpCode);
+        return $this;
     }
 
     /**
