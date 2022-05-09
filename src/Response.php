@@ -204,29 +204,22 @@ EOT;
     }
 
     /**
-     * Set cookie
-     *
-     * Set a new cookie
-     *
-     * @param string|array $name The name of the cookie
-     * @param string $value If string, the value of cookie
-     * @param array $options Settings for cookie
-     */
-    public static function setCookie($name, string $value, array $options = [])
-    {
-        Cookie::set($name, $value, $options);
-    }
-
-    /**
      * Shorthand method of setting a cookie + value + expire time
      *
      * @param string $name The name of the cookie
      * @param string $value The value of cookie
      * @param string $expire When the cookie expires. Default: 7 days
      */
-    public static function simpleCookie(string $name, string $value, string $expire = "7 days")
+    public function withCookie(string $name, string $value, string $expire = "7 days")
     {
+        if (!class_exists('Leaf\Http\Cookie')) {
+            Headers::contentHtml();
+            trigger_error('Leaf cookie not found. Run `leaf install cookie` or `composer require leafs/cookie`');
+        }
+
         Cookie::simpleCookie($name, $value, $expire);
+
+        return $this;
     }
 
     /**
@@ -234,9 +227,16 @@ EOT;
      *
      * @param string $name The name of the cookie
      */
-    public static function deleteCookie(string $name)
+    public function withoutCookie(string $name)
     {
+        if (!class_exists('Leaf\Http\Cookie')) {
+            Headers::contentHtml();
+            trigger_error('Leaf cookie not found. Run `leaf install cookie` or `composer require leafs/cookie`');
+        }
+
         Cookie::unset($name);
+
+        return $this;
     }
 
     /**
