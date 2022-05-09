@@ -197,9 +197,10 @@ EOT;
     /**
      * Set HTTP status code
      */
-    public static function status($code = null)
+    public function status($code = null)
     {
-        return Headers::status($code);
+        Headers::status($code);
+        return $this;
     }
 
     /**
