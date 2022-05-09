@@ -106,7 +106,6 @@ class Response
         echo $data;
     }
 
-
     /**
      * Output json encoded data with an HTTP code/message
      * 
@@ -130,7 +129,6 @@ class Response
         Headers::contentJSON($code);
         echo json_encode($dataToPrint);
     }
-
 
     /**
      * Output plain text
@@ -182,11 +180,6 @@ class Response
         echo <<<EOT
 $markup
 EOT;
-    }
-
-    public static function cors(String $allow_origin = "*", String $allow_headers = "*")
-    {
-        Headers::accessControl(["Allow-Origin" => $allow_origin, "Allow-Headers" => $allow_headers]);
     }
 
     /**
