@@ -20,11 +20,6 @@ class Response
     protected static $status;
 
     /**
-     * @var \Leaf\Http\Headers
-     */
-    public static $headers;
-
-    /**
      * @var array HTTP response codes and messages
      */
     protected static $messages = [
@@ -86,12 +81,6 @@ class Response
         510 => '510 Not Extended',
         511 => '511 Network Authentication Required'
     ];
-
-    public function __construct()
-    {
-        static::$headers = Headers::class;
-        Headers::contentHtml();
-    }
 
     /**
      * Output plain text
