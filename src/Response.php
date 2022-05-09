@@ -240,6 +240,30 @@ EOT;
     }
 
     /**
+     * Flash a piece of data to the session.
+     *
+     * @param string|array $name The key of the item to set
+     * @param string $value The value of flash item
+     */
+    public function withFlash($key, string $value)
+    {
+        if (!class_exists('Leaf\Http\Session')) {
+            Headers::contentHtml();
+            trigger_error('Leaf session not found. Run `leaf install session` or `composer require leafs/session`');
+        }
+
+        if (is_array($key)) {
+            foreach ($key as $k => $v) {
+                $this->withFlash($k, $v);
+            }
+        }
+
+        \Leaf\Flash::set($key, $value);
+
+        return $this;
+    }
+
+    /**
      * Redirect
      *
      * This method prepares this response to return an HTTP Redirect response
