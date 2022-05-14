@@ -2,11 +2,10 @@
 <p align="center">
   <br><br>
   <img src="https://leafphp.netlify.app/assets/img/leaf3-logo.png" height="100"/>
-  <h1 align="center">Leaf Http v2</h1>
   <br><br>
 </p>
 
-# Leaf PHP
+# Leaf Http v2
 
 [![Latest Stable Version](https://poser.pugx.org/leafs/http/v/stable)](https://packagist.org/packages/leafs/http)
 [![Total Downloads](https://poser.pugx.org/leafs/http/downloads)](https://packagist.org/packages/leafs/http)
