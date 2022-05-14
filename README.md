@@ -2,14 +2,30 @@
 <p align="center">
   <br><br>
   <img src="https://leafphp.netlify.app/assets/img/leaf3-logo.png" height="100"/>
-  <br><br>
+  <br>
 </p>
 
-# Leaf Http v2
+<h1 align="center">Leaf Http v2</h1>
 
-[![Latest Stable Version](https://poser.pugx.org/leafs/http/v/stable)](https://packagist.org/packages/leafs/http)
-[![Total Downloads](https://poser.pugx.org/leafs/http/downloads)](https://packagist.org/packages/leafs/http)
-[![License](https://poser.pugx.org/leafs/http/license)](https://packagist.org/packages/leafs/http)
+<p align="center">
+	<a href="https://packagist.org/packages/leafs/http"
+		><img
+			src="https://poser.pugx.org/leafs/http/v/stable"
+			alt="Latest Stable Version"
+	/></a>
+	<a href="https://packagist.org/packages/leafs/http"
+		><img
+			src="https://poser.pugx.org/leafs/http/downloads"
+			alt="Total Downloads"
+	/></a>
+	<a href="https://packagist.org/packages/leafs/http"
+		><img
+			src="https://poser.pugx.org/leafs/http/license"
+			alt="License"
+	/></a>
+</p>
+<br />
+<br />
 
 Leaf's core http functionality packaged as a serve-yourself module. **Although seperated from Leaf core, it is still part of the default initial installation and doesn't need to be installed manually (unless you want a particular version).**
 
