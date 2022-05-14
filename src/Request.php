@@ -12,6 +12,7 @@ namespace Leaf\Http;
  *
  * @author Michael Darko
  * @since 1.0.0
+ * @version 2.0
  */
 class Request
 {
@@ -28,29 +29,6 @@ class Request
      * @var array
      */
     protected static $formDataMediaTypes = ['application/x-www-form-urlencoded'];
-
-    /**
-     * HTTP Headers
-     * @var Headers
-     */
-    public static $headers;
-
-    /**
-     * HTTP Cookies
-     */
-    public static $cookies;
-
-    /**
-     * The Request Body
-     */
-    protected static $request;
-
-    public function __construct()
-    {
-        $handler = fopen('php://input', 'r');
-        static::$request = stream_get_contents($handler);
-        static::$headers = new Headers();
-    }
 
     /**
      * Get HTTP method
@@ -80,7 +58,7 @@ class Request
      */
     public static function hasHeader(String $header): bool
     {
-        return !!static::$headers->get($header);
+        return !!Headers::get($header);
     }
 
     /**
@@ -90,7 +68,8 @@ class Request
     public static function isAjax(): bool
     {
         if (static::params('isajax')) return true;
-        if (static::$headers->get('X_REQUESTED_WITH') && static::$headers->get('X_REQUESTED_WITH') === 'XMLHttpRequest') return true;
+
+        if (Headers::get('X_REQUESTED_WITH') && Headers::get('X_REQUESTED_WITH') === 'XMLHttpRequest') return true;
 
         return false;
     }
@@ -102,6 +81,23 @@ class Request
     public static function isXhr(): bool
     {
         return static::isAjax();
+    }
+
+    /**
+     * Access stream that allows you to read raw data from the request body. **This is not for form data**
+     * 
+     * @param boolean $safeData Sanitize data?
+     */
+    public static function input($safeData = true)
+    {
+        $handler = fopen('php://input', 'r');
+        $data = stream_get_contents($handler);
+        if (!$data) $data = json_encode([]);
+
+        $parsedData = json_decode($data, true);
+        if (is_array($parsedData)) $data = $parsedData;
+
+        return $safeData ? \Leaf\Anchor::sanitize($data) : $data;
     }
 
     /**
@@ -186,8 +182,11 @@ class Request
      */
     public static function body(bool $safeData = true)
     {
-        $req = is_array(json_decode(static::$request, true)) ? json_decode(static::$request, true) : [];
-        return $safeData ? \Leaf\Anchor::sanitize(array_merge($_GET, $_FILES, $_POST, $req)) : array_merge($_GET, $_FILES, $_POST, $req);
+        $finalData = array_merge($_GET, $_FILES, $_POST, static::input($safeData));
+
+        return $safeData ?
+            \Leaf\Anchor::sanitize($finalData) :
+            $finalData;
     }
 
     /**
@@ -218,7 +217,9 @@ class Request
      */
     public static function cookies(string $key = null)
     {
-        return $key ? \Leaf\Http\Cookie::get($key) : \Leaf\Http\Cookie::all();
+        return $key === null ?
+            Cookie::all() :
+            Cookie::get($key);
     }
 
     /**
@@ -245,8 +246,9 @@ class Request
      */
     public static function headers($key = null, bool $safeData = true)
     {
-        if ($key) return static::$headers->get($key, $safeData);
-        return static::$headers->all($safeData);
+        return ($key === null) ?
+            Headers::all($safeData) :
+            Headers::get($key, $safeData);
     }
 
     /**
@@ -255,7 +257,7 @@ class Request
      */
     public static function getContentType(): ?string
     {
-        return static::$headers->get('CONTENT_TYPE');
+        return Headers::get('CONTENT_TYPE');
     }
 
     /**
@@ -316,7 +318,7 @@ class Request
      */
     public static function getContentLength(): int
     {
-        return static::$headers->get('CONTENT_LENGTH') ?? 0;
+        return Headers::get('CONTENT_LENGTH') ?? 0;
     }
 
     /**
@@ -432,7 +434,7 @@ class Request
      */
     public static function getReferrer(): ?string
     {
-        return static::$headers->get('HTTP_REFERER');
+        return Headers::get('HTTP_REFERER');
     }
 
     /**
@@ -450,6 +452,6 @@ class Request
      */
     public static function getUserAgent(): ?string
     {
-        return static::$headers->get('HTTP_USER_AGENT');
+        return Headers::get('HTTP_USER_AGENT');
     }
 }
