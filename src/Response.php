@@ -11,6 +11,7 @@ namespace Leaf\Http;
  *
  * @author Michael Darko
  * @since 1.0.0
+ * @version 2.0
  */
 class Response
 {
