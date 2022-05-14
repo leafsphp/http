@@ -43,8 +43,9 @@ class Headers
      */
     public static function all(bool $safeOutput = false): array
     {
-        if ($safeOutput === false) return self::findHeaders();
-        return \Leaf\Anchor::sanitize(self::findHeaders());
+        return ($safeOutput === false) ?
+            self::findHeaders() :
+            \Leaf\Anchor::sanitize(self::findHeaders());
     }
 
     /**
@@ -159,5 +160,15 @@ class Headers
             }
         }
         return $headers;
+    }
+
+    /**
+     * Check if a header is present
+     * 
+     * @param string $header The header to check
+     */
+    public static function has(string $header)
+    {
+        return in_array($header, static::all());
     }
 }
