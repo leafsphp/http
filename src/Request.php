@@ -92,10 +92,21 @@ class Request
     {
         $handler = fopen('php://input', 'r');
         $data = stream_get_contents($handler);
-        if (!$data) $data = json_encode([]);
 
-        $parsedData = json_decode($data, true);
-        if (is_array($parsedData)) $data = $parsedData;
+        if (Headers::get('Content-Type') === 'application/x-www-form-urlencoded') {
+            $d = $data;
+            $data = [];
+
+            foreach (explode('&', $d) as $chunk) {
+                $param = explode("=", $chunk);
+                $data[$param[0]] = $param[1];
+            }
+        } else {
+            if (!$data) $data = json_encode([]);
+
+            $parsedData = json_decode($data, true);
+            if (is_array($parsedData)) $data = $parsedData;
+        }
 
         return $safeData ? \Leaf\Anchor::sanitize($data) : $data;
     }
