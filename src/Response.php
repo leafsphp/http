@@ -27,7 +27,26 @@ class Response
     /**
      * @var int HTTP status code
      */
-    protected static $status = 200;
+    protected $status = 200;
+
+    /**
+     * @var string HTTP Version
+     */
+    protected $version;
+
+    /**
+     * Get/Set Http Version
+     */
+    public function httpVersion(?string $version = null)
+    {
+        if (!$version || (is_string($version) && strlen($version) === 0)) {
+            return $this->version ?? $_SERVER['SERVER_PROTOCOL'] ?? 'HTTP/1.1';
+        }
+
+        $this->version = 'HTTP/' . str_replace('HTTP/', '', $version);
+
+        return $this;
+    }
 
     /**
      * Output plain text
@@ -41,7 +60,7 @@ class Response
         $this->headers['Content-Type'] = 'text/plain';
         $this->content = $data;
 
-        return $this;
+        $this->send();
     }
 
     /**
@@ -56,7 +75,7 @@ class Response
         $this->headers['Content-Type'] = 'application/xml';
         $this->content = $data;
 
-        return $this;
+        $this->send();
     }
 
     /**
@@ -67,20 +86,24 @@ class Response
      * @param bool $showCode Show response code in body?
      * @param bool $useMessage Show message instead of code
      */
-    public static function json($data, int $code = 200, bool $showCode = false, bool $useMessage = false)
+    public function json($data, int $code = 200, bool $showCode = false, bool $useMessage = false)
     {
+        $this->status = $code;
+
         if ($showCode) {
-            $dataToPrint = ["data" => $data, "code" => $code];
+            $dataToPrint = ['data' => $data, 'code' => $code];
 
             if ($useMessage) {
-                $dataToPrint = ["data" => $data, "message" => self::$messages[$code] ?? $code];
+                $dataToPrint = ['data' => $data, 'message' => Status::$statusTexts[$code] ?? 'unknown status'];
             }
         } else {
             $dataToPrint = $data;
         }
 
-        Headers::contentJSON($code);
-        echo json_encode($dataToPrint);
+        $this->headers['Content-Type'] = 'application/json';
+        $this->content = json_encode($dataToPrint);
+
+        $this->send();
     }
 
     /**
@@ -90,40 +113,42 @@ class Response
      * @param string|null $name The of the file as shown to user
      * @param int $code The response status code
      */
-    public static function download(string $file, string $name = null, int $code = 200)
+    public function download(string $file, string $name = null, int $code = 200)
     {
+        $this->status = $code;
+
         if (!file_exists($file)) {
             Headers::contentHtml();
             trigger_error("$file not found. Confirm your file path.");
         }
-        
+
         if ($name === null) $name = basename($file);
 
-        Headers::status($code);
-        Headers::set([
+        $this->headers = array_merge($this->headers, [
             'Content-Length' => filesize($file),
             'Content-Disposition' => "attachment; filename=$name",
         ]);
-        
-        readfile($file);
-        exit;
+
+        $this->content = $file;
+
+        $this->send();
     }
 
     /**
      * Output some data and break the application
      * 
-     * @param mixed $error The data to output
+     * @param mixed $data The data to output
      * @param int $code The Http status code
      */
-    public function exit($error, int $code = 500)
+    public function exit($data, int $code = 500)
     {
         $this->status = $code;
 
-        if (is_array($error)) {
+        if (is_array($data)) {
             $this->headers['Content-Type'] = 'application/json';
-            $this->content = json_encode($error);
+            $this->content = json_encode($data);
         } else {
-            $this->content = $error;
+            $this->content = $data;
         }
 
         $this->send();
@@ -131,23 +156,32 @@ class Response
         exit();
     }
 
-    public function page(string $file, int $code = null)
+    public function page(string $file, int $code = 200)
     {
         $this->status = $code;
         $this->headers['Content-Type'] = 'text/html';
         $this->content = require $file;
 
-        return $this;
+        $this->send();
     }
 
-    public function markup(String $markup, int $code = null)
+    public function markup(String $markup, int $code = 200)
     {
         $this->status = $code;
-        $this->headers['Content-Type'] = 'application/xml';
+        $this->headers['Content-Type'] = 'text/html';
         $this->content = <<<EOT
 $markup
 EOT;
 
+        $this->send();
+    }
+
+    /**
+     * Set HTTP status code
+     */
+    public function status($code = null)
+    {
+        Headers::status($code);
         return $this;
     }
 
@@ -159,16 +193,20 @@ EOT;
      */
     public function withHeader($name, ?string $value = '', $replace = true, int $httpCode = 200)
     {
-        Headers::set($name, $value, $replace, $httpCode);
-        return $this;
-    }
+        $this->status = $httpCode;
+        Headers::status($httpCode);
 
-    /**
-     * Set HTTP status code
-     */
-    public function status($code = null)
-    {
-        Headers::status($code);
+        if (is_array($name)) {
+            $this->headers = array_merge($this->headers, $name);
+            return $this;
+        }
+
+        if ($replace === false || $httpCode !== 200) {
+            Headers::set($name, $value, $replace, $httpCode);
+        } else {
+            $this->headers[$name] = $value;
+        }
+
         return $this;
     }
 
@@ -241,10 +279,21 @@ EOT;
      * @param string $url The redirect destination
      * @param int $status The redirect HTTP status code
      */
-    public static function redirect(string $url, int $status = 302)
+    public function redirect(string $url, int $status = 302)
     {
         Headers::status($status);
-        Headers::set('Location', $url);
+        Headers::set('Location', $url, true, $status);
+    }
+
+    /**
+     * The HTTP 204 No Content success status response code indicates
+     * that a request has succeeded, but that the client doesn't
+     * need to navigate away from its current page.
+     */
+    public function noContent()
+    {
+        $this->status = 204;
+        $this->send();
     }
 
     /**
@@ -255,6 +304,106 @@ EOT;
      */
     public static function getMessageForCode(int $status): ?string
     {
-        return self::$messages[$status] ?? null;
+        return Status::$statusTexts[$status] ?? 'unknown status';
+    }
+
+    /**
+     * Sends HTTP headers.
+     * 
+     * @param int $code The http status code to attach
+     *
+     * @return $this
+     */
+    public function sendHeaders()
+    {
+        // headers have already been sent by the developer
+        if (headers_sent()) {
+            return $this;
+        }
+
+        Headers::set($this->headers);
+
+        // status
+        header(sprintf('%s %s %s', $this->httpVersion(), $this->status, Status::$statusTexts[$this->status]), true, $this->status);
+
+        return $this;
+    }
+
+    /**
+     * Sends content for the current web response.
+     * 
+     * @param string $content The content to output
+     *
+     * @return $this
+     */
+    public function sendContent()
+    {
+        if (strpos($this->headers['Content-Disposition'] ?? '', 'attachment') !== false) {
+            readfile($this->content);
+        } else {
+            echo $this->content;
+        }
+
+        return $this;
+    }
+
+    /**
+     * Send the Http headers and content
+     * 
+     * @return $this
+     */
+    public function send()
+    {
+        $this->sendHeaders()->sendContent();
+
+        if (\function_exists('fastcgi_finish_request')) {
+            fastcgi_finish_request();
+        } elseif (\function_exists('litespeed_finish_request')) {
+            \litespeed_finish_request();
+        } elseif (!\in_array(\PHP_SAPI, ['cli', 'phpdbg'], true)) {
+            $this->closeOutputBuffers(0, true);
+        }
+    }
+
+    /**
+     * Cleans or flushes output buffers up to target level.
+     *
+     * Resulting level can be greater than target level if a non-removable buffer has been encountered.
+     *
+     * @final
+     */
+    public static function closeOutputBuffers(int $targetLevel, bool $flush): void
+    {
+        $status = ob_get_status(true);
+        $level = \count($status);
+        $flags = \PHP_OUTPUT_HANDLER_REMOVABLE | ($flush ? \PHP_OUTPUT_HANDLER_FLUSHABLE : \PHP_OUTPUT_HANDLER_CLEANABLE);
+
+        while ($level-- > $targetLevel && ($s = $status[$level]) && (!isset($s['del']) ? !isset($s['flags']) || ($s['flags'] & $flags) === $flags : $s['del'])) {
+            if ($flush) {
+                ob_end_flush();
+            } else {
+                ob_end_clean();
+            }
+        }
+    }
+
+    /**
+     * Returns the Response as an HTTP string.
+     *
+     * The string representation of the Response is the same as the
+     * one that will be sent to the client only if the prepare() method
+     * has been called before.
+     *
+     * @return string
+     */
+    public function __toString()
+    {
+        Headers::contentPlain();
+        return
+            sprintf('%s %s %s', $this->httpVersion(), $this->status, Status::$statusTexts[$this->status]) . "\r\n" .
+            implode("", array_map(function ($key, $value) {
+                return sprintf("%s: %s\r\n", $key, $value);
+            }, array_keys($this->headers), array_values($this->headers))) .
+            $this->content;
     }
 }
