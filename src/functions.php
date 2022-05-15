@@ -5,11 +5,11 @@ if (!function_exists('request')) {
      * Return request or request data
      *
      * @param array|string $data — Get data from request
+     * 
+     * @return \Leaf\Http\Request
      */
-    function request($data = null)
+    function request()
     {
-        if ($data !== null) return \Leaf\Http\Request::get($data);
-
         if (class_exists('\Leaf\Config')) {
             $request = Leaf\Config::get("request")["instance"] ?? null;
 
@@ -30,11 +30,11 @@ if (!function_exists('response')) {
      * Return response or set response data
      *
      * @param array|string $data — The JSON response to set
+     * 
+     * @return \Leaf\Http\Response
      */
-    function response($data = null)
+    function response()
     {
-        if ($data !== null) return \Leaf\Http\Response::json($data);
-
         if (class_exists('\Leaf\Config')) {
             $response = Leaf\Config::get("response")["instance"] ?? null;
 
