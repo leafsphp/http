@@ -85,18 +85,19 @@ class Response
      * @param mixed $data The data to output
      * @param int $code The response status code
      * @param bool $showCode Show response code in body?
-     * @param bool $useMessage Show message instead of code
      */
-    public function json($data, int $code = 200, bool $showCode = false, bool $useMessage = false)
+    public function json($data, int $code = 200, bool $showCode = false)
     {
         $this->status = $code;
 
         if ($showCode) {
-            $dataToPrint = ['data' => $data, 'code' => $code];
-
-            if ($useMessage) {
-                $dataToPrint = ['data' => $data, 'message' => Status::$statusTexts[$code] ?? 'unknown status'];
-            }
+            $dataToPrint = [
+                'data' => $data,
+                'status' => [
+                    'code' => $code,
+                    'message' => Status::$statusTexts[$code] ?? 'unknown status',
+                ],
+            ];
         } else {
             $dataToPrint = $data;
         }
