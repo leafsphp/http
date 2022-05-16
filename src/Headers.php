@@ -102,6 +102,16 @@ class Headers
     }
 
     /**
+     * Check if a header is present
+     * 
+     * @param string $header The header to check
+     */
+    public static function has(string $header)
+    {
+        return in_array($header, static::all());
+    }
+
+    /**
      * Set the content-type to plain text
      */
     public static function contentPlain($code = 200): void
@@ -160,15 +170,5 @@ class Headers
             }
         }
         return $headers;
-    }
-
-    /**
-     * Check if a header is present
-     * 
-     * @param string $header The header to check
-     */
-    public static function has(string $header)
-    {
-        return in_array($header, static::all());
     }
 }
