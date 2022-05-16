@@ -109,6 +109,38 @@ class Response
     }
 
     /**
+     * Output data from an HTML or PHP file
+     * 
+     * @param string $file The file to output
+     * @param int $code The http status code
+     */
+    public function page(string $file, int $code = 200)
+    {
+        $this->status = $code;
+        $this->headers['Content-Type'] = 'text/html';
+        $this->content = require $file;
+
+        $this->send();
+    }
+
+    /**
+     * Output some html/PHP
+     * 
+     * @param string $markup The data to output
+     * @param int $code The http status code
+     */
+    public function markup(string $markup, int $code = 200)
+    {
+        $this->status = $code;
+        $this->headers['Content-Type'] = 'text/html';
+        $this->content = <<<EOT
+$markup
+EOT;
+
+        $this->send();
+    }
+
+    /**
      * Output plain text
      * 
      * @param string $file Path to the file to download
@@ -156,26 +188,6 @@ class Response
         $this->send();
 
         exit();
-    }
-
-    public function page(string $file, int $code = 200)
-    {
-        $this->status = $code;
-        $this->headers['Content-Type'] = 'text/html';
-        $this->content = require $file;
-
-        $this->send();
-    }
-
-    public function markup(String $markup, int $code = 200)
-    {
-        $this->status = $code;
-        $this->headers['Content-Type'] = 'text/html';
-        $this->content = <<<EOT
-$markup
-EOT;
-
-        $this->send();
     }
 
     /**
