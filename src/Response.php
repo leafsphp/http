@@ -169,6 +169,17 @@ EOT;
     }
 
     /**
+     * The HTTP 204 No Content success status response code indicates
+     * that a request has succeeded, but that the client doesn't
+     * need to navigate away from its current page.
+     */
+    public function noContent()
+    {
+        $this->status = 204;
+        $this->send();
+    }
+
+    /**
      * Output some data and break the application
      * 
      * @param mixed $data The data to output
@@ -188,6 +199,21 @@ EOT;
         $this->send();
 
         exit();
+    }
+
+    /**
+     * Redirect
+     *
+     * This method prepares this response to return an HTTP Redirect response
+     * to the HTTP client.
+     *
+     * @param string $url The redirect destination
+     * @param int $status The redirect HTTP status code
+     */
+    public function redirect(string $url, int $status = 302)
+    {
+        Headers::status($status);
+        Headers::set('Location', $url, true, $status);
     }
 
     /**
@@ -282,32 +308,6 @@ EOT;
         \Leaf\Flash::set($key, $value);
 
         return $this;
-    }
-
-    /**
-     * Redirect
-     *
-     * This method prepares this response to return an HTTP Redirect response
-     * to the HTTP client.
-     *
-     * @param string $url The redirect destination
-     * @param int $status The redirect HTTP status code
-     */
-    public function redirect(string $url, int $status = 302)
-    {
-        Headers::status($status);
-        Headers::set('Location', $url, true, $status);
-    }
-
-    /**
-     * The HTTP 204 No Content success status response code indicates
-     * that a request has succeeded, but that the client doesn't
-     * need to navigate away from its current page.
-     */
-    public function noContent()
-    {
-        $this->status = 204;
-        $this->send();
     }
 
     /**
