@@ -274,9 +274,9 @@ EOT;
     /**
      * Delete cookie
      *
-     * @param string $name The name of the cookie
+     * @param mixed $name The name of the cookie
      */
-    public function withoutCookie(string $name)
+    public function withoutCookie($name)
     {
         if (!class_exists('Leaf\Http\Cookie')) {
             Headers::contentHtml();
