@@ -230,6 +230,8 @@ EOT;
      * 
      * @param string|array $name Header name
      * @param string|null $value Header value
+     * @param boolean $replace Replace existing header
+     * @param int $httpCode The HTTP status code
      */
     public function withHeader($name, ?string $value = '', $replace = true, int $httpCode = 200)
     {
