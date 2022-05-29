@@ -55,7 +55,7 @@ The available classes in the Http module are:
 - [`Leaf\Http\Cache`](https://leafphp.dev/modules/http/cache)
 - [`Leaf\Http\Status`](https://leafphp.dev/modules/http/status)
 
-**The docs for Leaf Http v2 can be found at [https://leafphp.dev/modules/http/v1/](https://leafphp.dev/modules/http/v1/).**
+**The docs for Leaf Http v2 can be found at [https://leafphp.dev/modules/http/v/2/](https://leafphp.dev/modules/http/v/2/).**
 
 ## Request
 
