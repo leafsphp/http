@@ -118,7 +118,11 @@ class Response
     {
         $this->status = $code;
         $this->headers['Content-Type'] = 'text/html';
-        $this->content = require $file;
+
+        \ob_start();
+        require $file;
+        $this->content = ob_get_contents();
+        ob_end_clean();
 
         $this->send();
     }
