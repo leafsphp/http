@@ -32,6 +32,6 @@
     "minimum-stability": "dev",
 	"prefer-stable": true,
     "require": {
-        "leafs/anchor": "^1.0"
+        "leafs/anchor": "*"
     }
 }
