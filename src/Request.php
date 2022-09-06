@@ -67,9 +67,13 @@ class Request
      */
     public static function isAjax(): bool
     {
-        if (static::params('isajax')) return true;
+        if (static::params('isajax')) {
+            return true;
+        }
 
-        if (Headers::get('X_REQUESTED_WITH') && Headers::get('X_REQUESTED_WITH') === 'XMLHttpRequest') return true;
+        if (Headers::get('X_REQUESTED_WITH') && Headers::get('X_REQUESTED_WITH') === 'XMLHttpRequest') {
+            return true;
+        }
 
         return false;
     }
@@ -85,7 +89,7 @@ class Request
 
     /**
      * Access stream that allows you to read raw data from the request body. **This is not for form data**
-     * 
+     *
      * @param boolean $safeData Sanitize data?
      */
     public static function input($safeData = true)
@@ -102,10 +106,15 @@ class Request
                 $data[$param[0]] = $param[1];
             }
         } else {
-            if (!$data) $data = json_encode([]);
+            if (!$data) {
+                $data = json_encode([]);
+            }
 
             $parsedData = json_decode($data, true);
-            if (is_array($parsedData)) $data = $parsedData;
+            if (is_array($parsedData)) {
+                $data = $parsedData;
+            }
+
         }
 
         return $safeData ? \Leaf\Anchor::sanitize($data) : $data;
@@ -127,7 +136,9 @@ class Request
     {
         $union = static::body();
 
-        if ($key) return $union[$key] ?? $default;
+        if ($key) {
+            return $union[$key] ?? $default;
+        }
 
         return $union;
     }
@@ -144,8 +155,7 @@ class Request
      * @param bool $safeData Sanitize output?
      * @param bool $noEmptyString Remove empty strings from return data?
      */
-    public static function try(array $params, bool $safeData = true, bool $noEmptyString = false)
-    {
+    function try (array $params, bool $safeData = true, bool $noEmptyString = false) {
         $data = static::get($params, $safeData);
         $dataKeys = array_keys($data);
 
@@ -165,22 +175,18 @@ class Request
 
     /**
      * Get raw request data
-     * 
+     *
      * @param string|array $item The items to output
      * @param mixed $default The default value to return if no data is available
      */
     public static function rawData($item = null, $default = null)
     {
-        $handler = fopen('php://input', 'r');
-        $decoded = json_decode(stream_get_contents($handler), true);
-        $data = is_array($decoded) ? $decoded : [];
-
-        return \Leaf\Anchor::deepGet($data, $item) ?? $default;
+        return \Leaf\Anchor::deepGet(static::input(false), $item) ?? $default;
     }
 
     /**
      * Return only get request data
-     * 
+     *
      * @param string|array $item The items to output
      * @param mixed $default The default value to return if no data is available
      */
@@ -191,7 +197,7 @@ class Request
 
     /**
      * Return only get request data
-     * 
+     *
      * @param string|array $item The items to output
      * @param mixed $default The default value to return if no data is available
      */
@@ -212,7 +218,9 @@ class Request
      */
     public static function get($params, bool $safeData = true)
     {
-        if (is_string($params)) return static::body($safeData)[$params] ?? null;
+        if (is_string($params)) {
+            return static::body($safeData)[$params] ?? null;
+        }
 
         $data = [];
 
@@ -230,11 +238,11 @@ class Request
      */
     public static function body(bool $safeData = true)
     {
-        $finalData = array_merge($_GET, $_FILES, $_POST, static::input($safeData));
+        $finalData = array_merge(static::urlData(), $_FILES, static::postData(), static::input($safeData));
 
         return $safeData ?
-            \Leaf\Anchor::sanitize($finalData) :
-            $finalData;
+        \Leaf\Anchor::sanitize($finalData) :
+        $finalData;
     }
 
     /**
@@ -244,8 +252,13 @@ class Request
      */
     public static function files($filenames = null)
     {
-        if ($filenames == null) return $_FILES;
-        if (is_string($filenames)) return $_FILES[$filenames] ?? null;
+        if ($filenames == null) {
+            return $_FILES;
+        }
+
+        if (is_string($filenames)) {
+            return $_FILES[$filenames] ?? null;
+        }
 
         $files = [];
         foreach ($filenames as $filename) {
@@ -266,8 +279,8 @@ class Request
     public static function cookies(string $key = null)
     {
         return $key === null ?
-            Cookie::all() :
-            Cookie::get($key);
+        Cookie::all() :
+        Cookie::get($key);
     }
 
     /**
@@ -295,8 +308,8 @@ class Request
     public static function headers($key = null, bool $safeData = true)
     {
         return ($key === null) ?
-            Headers::all($safeData) :
-            Headers::get($key, $safeData);
+        Headers::all($safeData) :
+        Headers::get($key, $safeData);
     }
 
     /**
