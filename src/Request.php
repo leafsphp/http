@@ -190,6 +190,17 @@ class Request
     }
 
     /**
+     * Return only get request data
+     * 
+     * @param string|array $item The items to output
+     * @param mixed $default The default value to return if no data is available
+     */
+    public static function postData($item = null, $default = null)
+    {
+        return \Leaf\Anchor::deepGet($_POST, $item) ?? $default;
+    }
+
+    /**
      * Returns request data
      *
      * This methods returns data passed into the request (request or form data).
