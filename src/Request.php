@@ -164,6 +164,21 @@ class Request
     }
 
     /**
+     * Get raw request data
+     * 
+     * @param string|array $item The items to output
+     * @param mixed $default The default value to return if no data is available
+     */
+    public static function rawData($item = null, $default = null)
+    {
+        $handler = fopen('php://input', 'r');
+        $decoded = json_decode(stream_get_contents($handler), true);
+        $data = is_array($decoded) ? $decoded : [];
+
+        return \Leaf\Anchor::deepGet($data, $item) ?? $default;
+    }
+
+    /**
      * Returns request data
      *
      * This methods returns data passed into the request (request or form data).
