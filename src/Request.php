@@ -154,7 +154,7 @@ class Request
    * @param bool $safeData Sanitize output?
    * @param bool $noEmptyString Remove empty strings from return data?
    */
-  function try(array $params, bool $safeData = true, bool $noEmptyString = false)
+  public static function try(array $params, bool $safeData = true, bool $noEmptyString = false)
   {
     $data = static::get($params, $safeData);
     $dataKeys = array_keys($data);
