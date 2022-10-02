@@ -227,7 +227,8 @@ EOT;
      */
     public function status($code = null)
     {
-        Headers::resetStatus($code);
+        $this->status = $code;
+        Headers::status($code);
         return $this;
     }
 
