@@ -105,15 +105,16 @@ class Request
         $param = explode("=", $chunk);
         $data[$param[0]] = $param[1];
       }
+    } else if (Headers::get('Content-Type') !== 'application/json' && strpos(Headers::get('Content-Type'), "multipart/form-data") !== 0) {
+      $safeData = false;
+      $data = [$data];
     } else {
       if (!$data) {
         $data = json_encode([]);
       }
 
       $parsedData = json_decode($data, true);
-      if (is_array($parsedData)) {
-        $data = $parsedData;
-      }
+      $data = is_array($parsedData) ? $parsedData : [$parsedData];
     }
 
     return $safeData ? \Leaf\Anchor::sanitize($data) : $data;
@@ -238,7 +239,7 @@ class Request
    */
   public static function body(bool $safeData = true)
   {
-    $finalData = array_merge(static::urlData(), $_FILES, static::postData(), static::input($safeData));
+    $finalData = array_merge(static::urlData(), $_FILES, static::postData(), static::input());
 
     return $safeData ?
       \Leaf\Anchor::sanitize($finalData) :
