@@ -30,6 +30,8 @@ class Headers
 
     /**
      * Force an HTTP code for response using PHP's `http_response_code`
+     * 
+     * @param int $httpCode The response code to set
      */
     public static function resetStatus($httpCode = 200)
     {

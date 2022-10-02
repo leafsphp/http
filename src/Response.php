@@ -221,11 +221,13 @@ EOT;
     }
 
     /**
-     * Set HTTP status code
+     * Force set HTTP status code
+     * 
+     * @param int $httpCode The response code to set
      */
     public function status($code = null)
     {
-        Headers::status($code);
+        Headers::resetStatus($code);
         return $this;
     }
 
