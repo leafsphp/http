@@ -105,7 +105,7 @@ class Request
         $param = explode("=", $chunk);
         $data[$param[0]] = $param[1];
       }
-    } else if (Headers::get('Content-Type') !== 'application/json' && strpos(Headers::get('Content-Type'), "multipart/form-data") !== 0) {
+    } else if (strpos(Headers::get('Content-Type'), "application/json") !== 0 && strpos(Headers::get('Content-Type'), "multipart/form-data") !== 0) {
       $safeData = false;
       $data = [$data];
     } else {
