@@ -226,10 +226,13 @@ EOT;
     }
 
     /**
-     * Set HTTP status code
+     * Force set HTTP status code
+     * 
+     * @param int $httpCode The response code to set
      */
     public function status($code = null)
     {
+        $this->status = $code;
         Headers::status($code);
         return $this;
     }
@@ -380,6 +383,15 @@ EOT;
     public function send()
     {
         $this->sendHeaders()->sendContent();
+
+        if (class_exists('Leaf\Eien\Server')) {
+            \Leaf\Config::set('response.data', [
+                'headers' => $this->headers,
+                'body' => strpos($this->headers['Content-Disposition'] ?? '', 'attachment') !== false
+                ? readfile($this->content)
+                    : $this->content,
+            ]);
+        }
 
         if (\function_exists('fastcgi_finish_request')) {
             fastcgi_finish_request();
