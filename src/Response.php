@@ -19,6 +19,11 @@ class Response
      * @var array
      */
     public $headers = [];
+    
+    /**
+     * @var array
+     */
+    public $cookies = [];
 
     /**
      * @var string
