@@ -102,10 +102,10 @@ class Request
       $data = [];
 
       foreach (explode('&', $d) as $chunk) {
-        $param = explode("=", $chunk);
+        $param = explode('=', $chunk);
         $data[$param[0]] = $param[1];
       }
-    } else if (strpos(Headers::get('Content-Type'), "application/json") !== 0 && strpos(Headers::get('Content-Type'), "multipart/form-data") !== 0) {
+    } else if (strpos(Headers::get('Content-Type') ?? '', 'application/json') !== 0 && strpos(Headers::get('Content-Type'), 'multipart/form-data') !== 0) {
       $safeData = false;
       $data = [$data];
     } else {
@@ -467,7 +467,7 @@ class Request
     $url = static::getScheme() . '://' . static::getHost();
 
     if ((static::getScheme() === 'https' && static::getPort() !== 443) || (static::getScheme() === 'http' && static::getPort() !== 80)) {
-      $url .= ":" . static::getPort();
+      $url .= ':' . static::getPort();
     }
 
     return $url;
