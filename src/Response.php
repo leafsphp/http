@@ -221,6 +221,11 @@ EOT;
      */
     public function redirect(string $url, int $status = 302)
     {
+        if (class_exists('Leaf\Eien\Server') && PHP_SAPI === 'cli') {
+            \Leaf\Config::set('response.headers', array_merge($this->headers, ['Location' => $url]));
+            return;
+        }
+
         Headers::status($status);
         Headers::set('Location', $url, true, $status);
     }
@@ -252,7 +257,16 @@ EOT;
 
         if (is_array($name)) {
             $this->headers = array_merge($this->headers, $name);
+
+            if (class_exists('Leaf\Eien\Server') && PHP_SAPI === 'cli') {
+                \Leaf\Config::set('response.headers', $this->headers);
+            }
+
             return $this;
+        }
+
+        if (class_exists('Leaf\Eien\Server') && PHP_SAPI === 'cli') {
+            \Leaf\Config::set('response.headers', array_merge($this->headers, [$name => $value]));
         }
 
         if ($replace === false || $httpCode !== 200) {
@@ -273,12 +287,11 @@ EOT;
      */
     public function withCookie(string $name, string $value, string $expire = "7 days")
     {
-        if (!class_exists('Leaf\Http\Cookie')) {
-            Headers::contentHtml();
-            trigger_error('Leaf cookie not found. Run `leaf install cookie` or `composer require leafs/cookie`');
-        }
+        $this->cookies[] = [$name, $value, $expire];
 
-        Cookie::simpleCookie($name, $value, $expire);
+        if (class_exists('Leaf\Eien\Server') && PHP_SAPI === 'cli') {
+            \Leaf\Config::set('response.cookies', $this->cookies);
+        }
 
         return $this;
     }
@@ -290,12 +303,11 @@ EOT;
      */
     public function withoutCookie($name)
     {
-        if (!class_exists('Leaf\Http\Cookie')) {
-            Headers::contentHtml();
-            trigger_error('Leaf cookie not found. Run `leaf install cookie` or `composer require leafs/cookie`');
-        }
+        $this->cookies[] = [$name, '', -1];
 
-        Cookie::unset($name);
+        if (class_exists('Leaf\Eien\Server') && PHP_SAPI === 'cli') {
+            \Leaf\Config::set('response.cookies', $this->cookies);
+        }
 
         return $this;
     }
@@ -344,6 +356,11 @@ EOT;
      */
     public function sendHeaders()
     {
+        if (class_exists('Leaf\Eien\Server') && PHP_SAPI === 'cli') {
+            \Leaf\Config::set('response.headers', $this->headers);
+            return $this;
+        }
+
         // headers have already been sent by the developer
         if (headers_sent()) {
             return $this;
@@ -353,6 +370,28 @@ EOT;
 
         // status
         header(sprintf('%s %s %s', $this->httpVersion(), $this->status, Status::$statusTexts[$this->status]), true, $this->status);
+
+        return $this;
+    }
+
+    /**
+     * Send cookies
+     */
+    public function sendCookies()
+    {
+        if (class_exists('Leaf\Eien\Server') && PHP_SAPI === 'cli') {
+            \Leaf\Config::set('response.cookies', $this->cookies);
+            return $this;
+        }
+
+        if (!class_exists('Leaf\Http\Cookie')) {
+            Headers::contentHtml();
+            trigger_error('Leaf cookie not found. Run `leaf install cookie` or `composer require leafs/cookie`');
+        }
+
+        foreach ($this->cookies as $cookie) {
+            Cookie::set(...$cookie);
+        }
 
         return $this;
     }
@@ -382,15 +421,10 @@ EOT;
      */
     public function send()
     {
-        $this->sendHeaders()->sendContent();
+        $this->sendHeaders()->sendCookies()->sendContent();
 
-        if (class_exists('Leaf\Eien\Server')) {
-            \Leaf\Config::set('response.data', [
-                'headers' => $this->headers,
-                'body' => strpos($this->headers['Content-Disposition'] ?? '', 'attachment') !== false
-                ? readfile($this->content)
-                    : $this->content,
-            ]);
+        if (class_exists('Leaf\Eien\Server') && PHP_SAPI === 'cli') {
+            \Leaf\Config::set('response.headers', $this->headers);
         }
 
         if (\function_exists('fastcgi_finish_request')) {
