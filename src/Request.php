@@ -160,7 +160,7 @@ class Request
         $dataKeys = array_keys($data);
 
         foreach ($dataKeys as $key) {
-            if (!$data[$key]) {
+            if (!isset($data[$key])) {
                 unset($data[$key]);
                 continue;
             }
