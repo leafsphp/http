@@ -19,7 +19,7 @@ class Response
      * @var array
      */
     public $headers = [];
-    
+
     /**
      * @var array
      */
@@ -222,7 +222,7 @@ EOT;
     public function redirect(string $url, int $status = 302)
     {
         if (class_exists('Leaf\Eien\Server') && PHP_SAPI === 'cli') {
-            \Leaf\Config::set('response.headers', array_merge($this->headers, ['Location' => $url]));
+            \Leaf\Config::set('response.redirect', [$url, $status]);
             return;
         }
 
@@ -252,21 +252,23 @@ EOT;
      */
     public function withHeader($name, ?string $value = '', $replace = true, int $httpCode = 200)
     {
+        if (class_exists('Leaf\Eien\Server') && PHP_SAPI === 'cli') {
+            $this->headers = array_merge(
+                $this->headers,
+                is_array($name) ? $name : [$name => $value]
+            );
+
+            \Leaf\Config::set('response.headers', $this->headers);
+
+            return $this;
+        }
+
         $this->status = $httpCode;
         Headers::status($httpCode);
 
         if (is_array($name)) {
             $this->headers = array_merge($this->headers, $name);
-
-            if (class_exists('Leaf\Eien\Server') && PHP_SAPI === 'cli') {
-                \Leaf\Config::set('response.headers', $this->headers);
-            }
-
             return $this;
-        }
-
-        if (class_exists('Leaf\Eien\Server') && PHP_SAPI === 'cli') {
-            \Leaf\Config::set('response.headers', array_merge($this->headers, [$name => $value]));
         }
 
         if ($replace === false || $httpCode !== 200) {
@@ -285,9 +287,9 @@ EOT;
      * @param string $value The value of cookie
      * @param string $expire When the cookie expires. Default: 7 days
      */
-    public function withCookie(string $name, string $value, string $expire = "7 days")
+    public function withCookie(string $name, string $value, int $expire = null)
     {
-        $this->cookies[] = [$name, $value, $expire];
+        $this->cookies[$name] = [$value, $expire ?? (time() + 604800)];
 
         if (class_exists('Leaf\Eien\Server') && PHP_SAPI === 'cli') {
             \Leaf\Config::set('response.cookies', $this->cookies);
@@ -303,7 +305,7 @@ EOT;
      */
     public function withoutCookie($name)
     {
-        $this->cookies[] = [$name, '', -1];
+        $this->cookies[$name] = ['', -1];
 
         if (class_exists('Leaf\Eien\Server') && PHP_SAPI === 'cli') {
             \Leaf\Config::set('response.cookies', $this->cookies);
@@ -389,8 +391,8 @@ EOT;
             trigger_error('Leaf cookie not found. Run `leaf install cookie` or `composer require leafs/cookie`');
         }
 
-        foreach ($this->cookies as $cookie) {
-            Cookie::set(...$cookie);
+        foreach ($this->cookies as $key => $value) {
+            Cookie::set($key, $value[0], ['expire' => $value[1]]);
         }
 
         return $this;
@@ -423,10 +425,6 @@ EOT;
     {
         $this->sendHeaders()->sendCookies()->sendContent();
 
-        if (class_exists('Leaf\Eien\Server') && PHP_SAPI === 'cli') {
-            \Leaf\Config::set('response.headers', $this->headers);
-        }
-
         if (\function_exists('fastcgi_finish_request')) {
             fastcgi_finish_request();
         } elseif (\function_exists('litespeed_finish_request')) {
@@ -456,25 +454,5 @@ EOT;
                 ob_end_clean();
             }
         }
-    }
-
-    /**
-     * Returns the Response as an HTTP string.
-     *
-     * The string representation of the Response is the same as the
-     * one that will be sent to the client only if the prepare() method
-     * has been called before.
-     *
-     * @return string
-     */
-    public function __toString()
-    {
-        Headers::contentPlain();
-        return
-            sprintf('%s %s %s', $this->httpVersion(), $this->status, Status::$statusTexts[$this->status]) . "\r\n" .
-            implode("", array_map(function ($key, $value) {
-                return sprintf("%s: %s\r\n", $key, $value);
-            }, array_keys($this->headers), array_values($this->headers))) .
-            $this->content;
     }
 }
