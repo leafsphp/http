@@ -104,7 +104,7 @@ class Request
 
             foreach (explode('&', $d) as $chunk) {
                 $param = explode('=', $chunk);
-                $data[$param[0]] = $param[1];
+                $data[$param[0]] = urldecode($param[1]);
             }
         } else if (strpos($content_type, 'application/json') !== 0 && strpos($content_type, 'multipart/form-data') !== 0) {
             $safeData = false;
@@ -211,7 +211,7 @@ class Request
     /**
      * Returns request data
      *
-     * This methods returns data passed into the request (request or form data).
+     * This method returns data passed into the request (request or form data).
      * This method returns get, post, put patch, delete or raw faw form data or NULL
      * if the data isn't found.
      *
@@ -240,7 +240,7 @@ class Request
      */
     public static function body(bool $safeData = true)
     {
-        $finalData = array_merge(static::urlData(), $_FILES, static::postData(), static::input());
+        $finalData = array_merge(static::urlData(), $_FILES, static::postData(), static::input(false));
 
         return $safeData ?
             \Leaf\Anchor::sanitize($finalData) :
@@ -273,7 +273,7 @@ class Request
      * Fetch COOKIE data
      *
      * This method returns a key-value array of Cookie data sent in the HTTP request, or
-     * the value of a array key if requested; if the array key does not exist, NULL is returned.
+     * the value of an array key if requested. If the array key does not exist, NULL is returned.
      *
      * @param string|null $key
      * @return array|string|null
@@ -300,7 +300,7 @@ class Request
      * Get Headers
      *
      * This method returns a key-value array of headers sent in the HTTP request, or
-     * the value of a hash key if requested; if the array key does not exist, NULL is returned.
+     * the value of a hash key if requested. If the array key does not exist, NULL is returned.
      *
      * @param array|string|null $key The header(s) to return
      * @param bool $safeData Attempt to sanitize headers
