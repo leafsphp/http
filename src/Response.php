@@ -56,7 +56,7 @@ class Response
 
     /**
      * Output plain text
-     * 
+     *
      * @param mixed $data The data to output
      * @param int $code The response status code
      */
@@ -75,7 +75,7 @@ class Response
      * @param string $data The data to output
      * @param int $code The response status code
      */
-    public function xml($data, int $code = 200)
+    public function xml(string $data, int $code = 200)
     {
         $this->status = $code;
         $this->headers['Content-Type'] = 'application/xml';
@@ -86,7 +86,7 @@ class Response
 
     /**
      * Output json encoded data with an HTTP code/message
-     * 
+     *
      * @param mixed $data The data to output
      * @param int $code The response status code
      * @param bool $showCode Show response code in body?
@@ -115,7 +115,7 @@ class Response
 
     /**
      * Output data from an HTML or PHP file
-     * 
+     *
      * @param string $file The file to output
      * @param int $code The http status code
      */
@@ -134,7 +134,7 @@ class Response
 
     /**
      * Output some html/PHP
-     * 
+     *
      * @param string $markup The data to output
      * @param int $code The http status code
      */
@@ -151,7 +151,7 @@ EOT;
 
     /**
      * Output plain text
-     * 
+     *
      * @param string $file Path to the file to download
      * @param string|null $name The of the file as shown to user
      * @param int $code The response status code
@@ -190,7 +190,7 @@ EOT;
 
     /**
      * Output some data and break the application
-     * 
+     *
      * @param mixed $data The data to output
      * @param int $code The Http status code
      */
@@ -232,25 +232,26 @@ EOT;
 
     /**
      * Force set HTTP status code
-     * 
-     * @param int $httpCode The response code to set
+     *
+     * @param int|null code The response code to set
      */
-    public function status($code = null)
+    public function status(?int $code = null): Response
     {
         $this->status = $code;
         Headers::status($code);
+
         return $this;
     }
 
     /**
      * set header
-     * 
+     *
      * @param string|array $name Header name
      * @param string|null $value Header value
      * @param boolean $replace Replace existing header
      * @param int $httpCode The HTTP status code
      */
-    public function withHeader($name, ?string $value = '', $replace = true, int $httpCode = 200)
+    public function withHeader($name, ?string $value = '', bool $replace = true, int $httpCode = 200): Response
     {
         if (class_exists('Leaf\Eien\Server') && PHP_SAPI === 'cli') {
             $this->headers = array_merge(
@@ -285,9 +286,11 @@ EOT;
      *
      * @param string $name The name of the cookie
      * @param string $value The value of cookie
-     * @param string $expire When the cookie expires. Default: 7 days
+     * @param int|null $expire When the cookie expires. Default: 7 days
+     *
+     * @return Response
      */
-    public function withCookie(string $name, string $value, int $expire = null)
+    public function withCookie(string $name, string $value, int $expire = null): Response
     {
         $this->cookies[$name] = [$value, $expire ?? (time() + 604800)];
 
@@ -303,7 +306,7 @@ EOT;
      *
      * @param mixed $name The name of the cookie
      */
-    public function withoutCookie($name)
+    public function withoutCookie($name): Response
     {
         $this->cookies[$name] = ['', -1];
 
@@ -317,10 +320,10 @@ EOT;
     /**
      * Flash a piece of data to the session.
      *
-     * @param string|array $name The key of the item to set
+     * @param string|array key The key of the item to set
      * @param string $value The value of flash item
      */
-    public function withFlash($key, string $value)
+    public function withFlash($key, string $value): Response
     {
         if (!class_exists('Leaf\Http\Session')) {
             Headers::contentHtml();
@@ -340,7 +343,7 @@ EOT;
 
     /**
      * Get message for HTTP status code
-     * 
+     *
      * @param int $status
      * @return string|null
      */
@@ -351,12 +354,10 @@ EOT;
 
     /**
      * Sends HTTP headers.
-     * 
-     * @param int $code The http status code to attach
      *
      * @return $this
      */
-    public function sendHeaders()
+    public function sendHeaders(): Response
     {
         if (class_exists('Leaf\Eien\Server') && PHP_SAPI === 'cli') {
             \Leaf\Config::set('response.headers', $this->headers);
@@ -379,20 +380,17 @@ EOT;
     /**
      * Send cookies
      */
-    public function sendCookies()
+    public function sendCookies(): Response
     {
         if (class_exists('Leaf\Eien\Server') && PHP_SAPI === 'cli') {
             \Leaf\Config::set('response.cookies', $this->cookies);
             return $this;
         }
 
-        if (!class_exists('Leaf\Http\Cookie')) {
-            Headers::contentHtml();
-            trigger_error('Leaf cookie not found. Run `leaf install cookie` or `composer require leafs/cookie`');
-        }
-
-        foreach ($this->cookies as $key => $value) {
-            Cookie::set($key, $value[0], ['expire' => $value[1]]);
+        if (class_exists('Leaf\Http\Cookie')) {
+            foreach ($this->cookies as $key => $value) {
+                Cookie::set($key, $value[0], ['expire' => $value[1]]);
+            }
         }
 
         return $this;
@@ -400,12 +398,10 @@ EOT;
 
     /**
      * Sends content for the current web response.
-     * 
-     * @param string $content The content to output
      *
      * @return $this
      */
-    public function sendContent()
+    public function sendContent(): Response
     {
         if (strpos($this->headers['Content-Disposition'] ?? '', 'attachment') !== false) {
             readfile($this->content);
@@ -418,10 +414,10 @@ EOT;
 
     /**
      * Send the Http headers and content
-     * 
+     *
      * @return $this
      */
-    public function send()
+    public function send(): Response
     {
         $this->sendHeaders()->sendCookies()->sendContent();
 
@@ -432,6 +428,8 @@ EOT;
         } elseif (!\in_array(\PHP_SAPI, ['cli', 'phpdbg'], true)) {
             $this->closeOutputBuffers(0, true);
         }
+
+        return $this;
     }
 
     /**
