@@ -64,7 +64,7 @@ class Headers
      */
     public static function get($params, bool $safeOutput = false)
     {
-        if (is_string($params)) return self::all($safeOutput)[$params] ?? null;
+        if (is_string($params)) return array_change_key_case(self::all($safeOutput), CASE_LOWER)[strtolower($params)] ?? null;
 
         $data = [];
         foreach ($params as $param) {
