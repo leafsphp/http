@@ -165,11 +165,14 @@ EOT;
             trigger_error("$file not found. Confirm your file path.");
         }
 
-        if ($name === null) $name = basename($file);
-
         $this->headers = array_merge($this->headers, [
+            'Expires' => '0',
+            'Pragma' => 'public',
             'Content-Length' => filesize($file),
-            'Content-Disposition' => "attachment; filename=$name",
+            'Cache-Control' => 'must-revalidate',
+            'Content-Description' => 'File Transfer',
+            'Content-Type' => 'application/octet-stream',
+            'Content-Disposition' => 'attachment; filename="' . $name ?? basename($file) . '"',
         ]);
 
         $this->content = $file;
