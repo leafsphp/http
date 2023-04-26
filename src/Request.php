@@ -67,15 +67,7 @@ class Request
      */
     public static function isAjax(): bool
     {
-        if (static::params('isajax')) {
-            return true;
-        }
-
-        if (Headers::get('X_REQUESTED_WITH') && Headers::get('X_REQUESTED_WITH') === 'XMLHttpRequest') {
-            return true;
-        }
-
-        return false;
+        return !!static::params('isajax') || Headers::get('X-Requested-With') === 'XMLHttpRequest';
     }
 
     /**
