@@ -1,6 +1,7 @@
 # Global
 .phpunit*
 .composer
+.github
 composer.lock
 package-lock.json
 .phpunit.result.cache
