@@ -307,6 +307,25 @@ class Request
     }
 
     /**
+     * Validate the request data
+     * @param array $rules The rules to validate against
+     * @return bool
+     */
+    public static function validate(array $rules)
+    {
+        return \Leaf\Form::validate(static::body(false), $rules);
+    }
+
+    /**
+     * Handle errors from validation
+     * @return array
+     */
+    public static function errors()
+    {
+        return \Leaf\Form::errors();
+    }
+
+    /**
      * Get Content Type
      * @return string|null
      */
@@ -360,6 +379,7 @@ class Request
     public static function getContentCharset(): ?string
     {
         $mediaTypeParams = static::getMediaTypeParams();
+
         if (isset($mediaTypeParams['charset'])) {
             return $mediaTypeParams['charset'];
         }
@@ -412,7 +432,7 @@ class Request
      */
     public static function getPort(): int
     {
-        return (int)$_SERVER['SERVER_PORT'] ?? 80;
+        return (int) $_SERVER['SERVER_PORT'] ?? 80;
     }
 
     /**

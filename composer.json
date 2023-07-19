@@ -1,6 +1,6 @@
 {
   "name": "leafs/http",
-  "description": "Leaf PHP HTTP module.",
+  "description": "Http abstraction for Leaf PHP",
   "keywords": [
     "http",
     "request",
@@ -32,6 +32,7 @@
   "minimum-stability": "dev",
   "prefer-stable": true,
   "require": {
-    "leafs/anchor": "*"
+    "leafs/anchor": "*",
+    "leafs/form": "v2.x-dev"
   }
 }
