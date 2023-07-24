@@ -12,7 +12,7 @@ namespace Leaf\Http;
  *
  * @author Michael Darko
  * @since 1.0.0
- * @version 2.0
+ * @version 2.3.0
  */
 class Request
 {
@@ -317,12 +317,39 @@ class Request
     }
 
     /**
+     * @return \Leaf\Auth
+     */
+    protected static function auth()
+    {
+        if (!class_exists('\Leaf\Auth')) {
+            throw new \Exception("You need to install the leaf-auth package to use the auth helper");
+        }
+
+        if (!(\Leaf\Config::get('auth.instance'))) {
+            \Leaf\Config::set('auth.instance', new \Leaf\Auth());
+        }
+
+        return \Leaf\Config::get('auth.instance');
+    }
+
+    /**
+     * Get the authenticated user
+     */
+    public static function user()
+    {
+        return static::auth()->user();
+    }
+
+    /**
      * Handle errors from validation
      * @return array
      */
     public static function errors()
     {
-        return \Leaf\Form::errors();
+        return array_merge(
+            \Leaf\Form::errors(),
+            static::auth()->errors()
+        );
     }
 
     /**
