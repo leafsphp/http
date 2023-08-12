@@ -308,21 +308,30 @@ class Request
 
     /**
      * Validate the request data
+     * 
      * @param array $rules The rules to validate against
-     * @return bool
+     * 
+     * @return false|array Returns false if validation fails, or the validated data if validation passes
      */
     public static function validate(array $rules)
     {
-        return \Leaf\Form::validate(static::body(false), $rules);
+        $data = \Leaf\Form::validate(static::body(false), $rules);
+
+        if ($data === false) {
+            return false;
+        }
+
+        return static::body();
     }
 
     /**
+     * Return the auth instance
      * @return \Leaf\Auth
      */
     protected static function auth()
     {
         if (!class_exists('\Leaf\Auth')) {
-            throw new \Exception("You need to install the leaf-auth package to use the auth helper");
+            throw new \Exception("You need to install the leafs/auth package to use the auth helper");
         }
 
         if (!(\Leaf\Config::get('auth.instance'))) {
