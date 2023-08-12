@@ -88,9 +88,9 @@ class Request
     {
         $handler = fopen('php://input', 'r');
         $data = stream_get_contents($handler);
-        $content_type = Headers::get('Content-Type') ?? '';
+        $contentType = Headers::get('Content-Type') ?? '';
 
-        if ($content_type === 'application/x-www-form-urlencoded') {
+        if ($contentType === 'application/x-www-form-urlencoded') {
             $d = $data;
             $data = [];
 
@@ -98,7 +98,7 @@ class Request
                 $param = explode('=', $chunk);
                 $data[$param[0]] = urldecode($param[1]);
             }
-        } else if (strpos($content_type, 'application/json') !== 0 && strpos($content_type, 'multipart/form-data') !== 0) {
+        } else if (strpos($contentType, 'application/json') !== 0 && strpos($contentType, 'multipart/form-data') !== 0) {
             $safeData = false;
             $data = [$data];
         } else {
@@ -358,7 +358,7 @@ class Request
      */
     public static function getContentType(): ?string
     {
-        return Headers::get('CONTENT_TYPE');
+        return Headers::get('Content-Type');
     }
 
     /**
