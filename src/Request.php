@@ -310,10 +310,11 @@ class Request
      * Validate the request data
      * 
      * @param array $rules The rules to validate against
+     * @param boolean $returnFullData Return the full data or just the validated data?
      * 
      * @return false|array Returns false if validation fails, or the validated data if validation passes
      */
-    public static function validate(array $rules)
+    public static function validate(array $rules, bool $returnFullData = false)
     {
         $data = \Leaf\Form::validate(static::body(false), $rules);
 
@@ -321,7 +322,7 @@ class Request
             return false;
         }
 
-        return static::body();
+        return $returnFullData ? $data : static::get(array_keys($rules));
     }
 
     /**
@@ -331,7 +332,7 @@ class Request
     protected static function auth()
     {
         if (!class_exists('\Leaf\Auth')) {
-            throw new \Exception("You need to install the leafs/auth package to use the auth helper");
+            throw new \Exception('You need to install the leafs/auth package to use the auth helper');
         }
 
         if (!(\Leaf\Config::get('auth.instance'))) {
