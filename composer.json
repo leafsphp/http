@@ -33,6 +33,6 @@
   "prefer-stable": true,
   "require": {
     "leafs/anchor": "*",
-    "leafs/form": "v2.x-dev"
+    "leafs/form": "*"
   }
 }
