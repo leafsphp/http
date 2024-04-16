@@ -171,8 +171,14 @@ class Headers
 
         $headers = [];
         foreach ($_SERVER as $name => $value) {
-            if ((substr($name, 0, 5) == 'HTTP_') || ($name == 'CONTENT_TYPE') || ($name == 'CONTENT_LENGTH')) {
+            if ((substr($name, 0, 5) == 'HTTP_')) {
                 $headers[str_replace([' ', 'Http'], ['-', 'HTTP'], ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))))] = $value;
+            }
+            else if ($name == 'CONTENT_TYPE') {
+                $headers['Content-Type'] = $value;
+            }
+            else if ($name == 'CONTENT_LENGTH') {
+                $headers['Content-Length'] = $value;
             }
         }
         return $headers;
