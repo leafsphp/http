@@ -566,4 +566,76 @@ class Request
     {
         return Headers::get('HTTP_USER_AGENT');
     }
+
+    /**
+     * Store a file from the request.
+     *
+     * @param string $key The name of the file input the request.
+     * @param string $destination The directory where the file should be stored.
+     * @param array $configs Optional configurations: max_file_size, file_type, extensions
+     * @return array An array containing the status, path, and error message.
+     */
+    public static function store(string $key, string $destination, array $configs = []): object
+    {
+        $configs["unique"] = true;
+
+        # See PR notes #1
+        if(isset($configs["extensions"])) {
+            $file = self::get($key);
+            $fileExtension = pathinfo($file["name"], PATHINFO_EXTENSION);
+            if(!in_array($fileExtension, $configs["extensions"])) {
+                return (object) [
+                    'status' => false,
+                    'error' => 'Invalid file extension.'
+                ];
+            }
+        }
+
+        $fileSystem = new \Leaf\FS;
+        $uploadedFile = $fileSystem::uploadFile(self::get($key), $destination, $configs);
+        if(!$uploadedFile)
+            return (object) [
+                'status' => false,
+                'error' => $fileSystem::$errorsArray['upload']
+            ];
+
+        return (object) array_shift($fileSystem::$uploadInfo);
+    }
+
+    /**
+     * Store a file from the request with a specific name.
+     *
+     * @param string $key The name of the file input the request.
+     * @param string $destination The directory where the file should be stored.
+     * @param string $filename The name to give the stored file.
+     * @param array $configs Optional configurations: max_file_size, file_type, extensions
+     * @return array An array containing the status, path, and error message.
+     */
+    public static function storeAs(string $key, string $destination, string $filename, array $configs = []): object
+    {
+        $configs["rename"] = true;
+        $configs["name"] = $filename;
+
+        # See PR notes #1
+        if(isset($configs["extensions"])) {
+            $file = self::get($key);
+            $fileExtension = pathinfo($file["name"], PATHINFO_EXTENSION);
+            if(!in_array($fileExtension, $configs["extensions"])) {
+                return (object) [
+                    'status' => false,
+                    'error' => 'Invalid file extension.'
+                ];
+            }
+        }
+        
+        $fileSystem = new \Leaf\FS;
+        $uploadedFile = $fileSystem::uploadFile(self::get($key), $destination, $configs);
+        if(!$uploadedFile)
+            return (object) [
+                'status' => false,
+                'error' => $fileSystem::$errorsArray['upload']
+            ];
+
+        return (object) array_shift($fileSystem::$uploadInfo);
+    }
 }

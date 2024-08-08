@@ -33,6 +33,7 @@
   "prefer-stable": true,
   "require": {
     "leafs/anchor": "*",
-    "leafs/form": "*"
+    "leafs/form": "*",
+    "leafs/fs": "*"
   }
 }
