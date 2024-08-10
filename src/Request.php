@@ -592,7 +592,7 @@ class Request
         }
 
         $fileSystem = new \Leaf\FS;
-        $uploadedFile = $fileSystem::uploadFile(self::get($key), $destination, $configs);
+        $uploadedFile = $fileSystem::uploadFile(self::get($key), StoragePath($destination), $configs);
         if(!$uploadedFile)
             return (object) [
                 'status' => false,
@@ -629,7 +629,7 @@ class Request
         }
         
         $fileSystem = new \Leaf\FS;
-        $uploadedFile = $fileSystem::uploadFile(self::get($key), $destination, $configs);
+        $uploadedFile = $fileSystem::uploadFile(self::get($key), storagePath($destination), $configs);
         if(!$uploadedFile)
             return (object) [
                 'status' => false,
