@@ -29,6 +29,7 @@ class Request
      * @var array
      */
     protected static $formDataMediaTypes = ['application/x-www-form-urlencoded'];
+    protected static $errors = [];
 
     /**
      * Get HTTP method
@@ -285,7 +286,7 @@ class Request
     {
         $method = static::getMethod();
 
-        return ($method === self::METHOD_POST && is_null(static::getContentType())) || in_array(static::getMediaType(), self::$formDataMediaTypes);
+        return ($method === static::METHOD_POST && is_null(static::getContentType())) || in_array(static::getMediaType(), static::$formDataMediaTypes);
     }
 
     /**
@@ -318,10 +319,6 @@ class Request
     {
         $data = \Leaf\Form::validate(static::body(false), $rules);
 
-        if ($data === false) {
-            return false;
-        }
-
         return $returnFullData ? $data : static::get(array_keys($rules));
     }
 
@@ -332,14 +329,16 @@ class Request
     protected static function auth()
     {
         if (!class_exists('\Leaf\Auth')) {
-            throw new \Exception('You need to install the leafs/auth package to use the auth helper');
+            throw new \Exception('You need to install the leafs/auth module to use the auth helper');
         }
 
-        if (!(\Leaf\Config::get('auth.instance'))) {
-            \Leaf\Config::set('auth.instance', new \Leaf\Auth());
+        if (!(\Leaf\Config::getStatic('auth'))) {
+            \Leaf\Config::singleton('auth', function () {
+                return new \Leaf\Auth;
+            });
         }
 
-        return \Leaf\Config::get('auth.instance');
+        return \Leaf\Config::get('auth');
     }
 
     /**
@@ -351,15 +350,50 @@ class Request
     }
 
     /**
-     * Handle errors from validation
-     * @return array
+     * Store a file from the request.
+     *
+     * @param string $key The name of the file input the request.
+     * @param string $destination The directory where the file should be stored.
+     * @param array $config Optional configurations: max_file_size, file_type, extensions
+     * 
+     * @return array|false An array containing the status or false for a failure.
      */
-    public static function errors()
+    public static function upload(string $key, string $destination, array $config = [])
     {
-        return array_merge(
-            \Leaf\Form::errors(),
-            static::auth()->errors()
+        $file = static::files($key);
+
+        if (!$file) {
+            static::$errors['upload'] = 'No file was uploaded.';
+            return false;
+        }
+
+        if (isset($config['extensions'])) {
+            $fileExtension = pathinfo($file['name'], PATHINFO_EXTENSION);
+
+            if (!in_array($fileExtension, $config['extensions'])) {
+                static::$errors['upload'] = 'Invalid file extension.';
+                return false;
+            }
+        }
+
+        $config['unique'] = true;
+        $fileSystem = new \Leaf\FS;
+        $uploadedFile = $fileSystem->uploadFile(
+            $file,
+            preg_replace(
+                '/\/$/',
+                '',
+                $destination
+            ) . '/',
+            $config
         );
+
+        if (!$uploadedFile) {
+            static::$errors = $fileSystem->errors();
+            return false;
+        }
+
+        return $fileSystem->uploadInfo($uploadedFile);
     }
 
     /**
@@ -378,6 +412,7 @@ class Request
     public static function getMediaType(): ?string
     {
         $contentType = static::getContentType();
+
         if ($contentType) {
             $contentTypeParts = preg_split('/\s*[;,]\s*/', $contentType);
 
@@ -393,8 +428,8 @@ class Request
      */
     public static function getMediaTypeParams(): array
     {
-        $contentType = static::getContentType();
         $contentTypeParams = [];
+        $contentType = static::getContentType();
 
         if ($contentType) {
             $contentTypeParts = preg_split('/\s*[;,]\s*/', $contentType);
@@ -444,7 +479,6 @@ class Request
                 return $matches[1];
             } else if (strpos($_SERVER['HTTP_HOST'], ':') !== false) {
                 $hostParts = explode(':', $_SERVER['HTTP_HOST']);
-
                 return $hostParts[0];
             }
 
@@ -568,74 +602,15 @@ class Request
     }
 
     /**
-     * Store a file from the request.
-     *
-     * @param string $key The name of the file input the request.
-     * @param string $destination The directory where the file should be stored.
-     * @param array $configs Optional configurations: max_file_size, file_type, extensions
-     * @return array An array containing the status, path, and error message.
+     * Handle errors from validation/auth/upload
+     * @return array
      */
-    public static function store(string $key, string $destination, array $configs = []): object
+    public static function errors()
     {
-        $configs["unique"] = true;
-
-        # See PR notes #1
-        if(isset($configs["extensions"])) {
-            $file = self::get($key);
-            $fileExtension = pathinfo($file["name"], PATHINFO_EXTENSION);
-            if(!in_array($fileExtension, $configs["extensions"])) {
-                return (object) [
-                    'status' => false,
-                    'error' => 'Invalid file extension.'
-                ];
-            }
-        }
-
-        $fileSystem = new \Leaf\FS;
-        $uploadedFile = $fileSystem::uploadFile(self::get($key), StoragePath($destination), $configs);
-        if(!$uploadedFile)
-            return (object) [
-                'status' => false,
-                'error' => $fileSystem::$errorsArray['upload']
-            ];
-
-        return (object) array_shift($fileSystem::$uploadInfo);
-    }
-
-    /**
-     * Store a file from the request with a specific name.
-     *
-     * @param string $key The name of the file input the request.
-     * @param string $destination The directory where the file should be stored.
-     * @param string $filename The name to give the stored file.
-     * @param array $configs Optional configurations: max_file_size, file_type, extensions
-     * @return array An array containing the status, path, and error message.
-     */
-    public static function storeAs(string $key, string $destination, string $filename, array $configs = []): object
-    {
-        $configs["rename"] = true;
-        $configs["name"] = $filename;
-
-        # See PR notes #1
-        if(isset($configs["extensions"])) {
-            $file = self::get($key);
-            $fileExtension = pathinfo($file["name"], PATHINFO_EXTENSION);
-            if(!in_array($fileExtension, $configs["extensions"])) {
-                return (object) [
-                    'status' => false,
-                    'error' => 'Invalid file extension.'
-                ];
-            }
-        }
-        
-        $fileSystem = new \Leaf\FS;
-        $uploadedFile = $fileSystem::uploadFile(self::get($key), storagePath($destination), $configs);
-        if(!$uploadedFile)
-            return (object) [
-                'status' => false,
-                'error' => $fileSystem::$errorsArray['upload']
-            ];
-
-        return (object) array_shift($fileSystem::$uploadInfo);
+        return array_merge(
+            static::$errors,
+            \Leaf\Form::errors(),
+            class_exists('\Leaf\Auth') ? static::auth()->errors() : []
+        );
     }
 }
