@@ -229,6 +229,10 @@ EOT;
             return;
         }
 
+        if (class_exists('Leaf\App')) {
+            $url = str_replace('//', '/', app()->getBasePath() . $url);
+        }
+
         Headers::status($status);
         Headers::set('Location', $url, true, $status);
     }
