@@ -319,6 +319,10 @@ class Request
     {
         $data = \Leaf\Form::validate(static::body(false), $rules);
 
+        if ($data === false) {
+            return false;
+        }
+
         return $returnFullData ? $data : static::get(array_keys($rules));
     }
 
