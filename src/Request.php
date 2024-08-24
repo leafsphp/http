@@ -397,6 +397,22 @@ class Request
     }
 
     /**
+     * Store a file from the request with a given name
+     * 
+     * @param string $key The name of the file input the request.
+     * @param string $destination The directory where the file should be stored.
+     * @param string $name The name to store the file as.
+     * @param array $config Optional configurations: max_file_size, file_type, extensions
+     */
+    public static function uploadAs(string $key, string $destination, string $name, array $config = [])
+    {
+        $config['name'] = $name;
+        $config['rename'] = true;
+
+        return static::upload($key, $destination, $config);
+    }
+
+    /**
      * Get Content Type
      * @return string|null
      */
