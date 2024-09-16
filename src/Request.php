@@ -112,29 +112,6 @@ class Request
     }
 
     /**
-     * Fetch GET and POST data
-     *
-     * This method returns a union of GET and POST data as a key-value array, or the value
-     * of the array key if requested. If the array key does not exist, NULL is returned,
-     * unless there is a default value specified.
-     *
-     * @param string|null $key
-     * @param mixed|null $default
-     *
-     * @return mixed
-     */
-    public static function params(string $key = null, $default = null)
-    {
-        $union = static::body();
-
-        if ($key) {
-            return $union[$key] ?? $default;
-        }
-
-        return $union;
-    }
-
-    /**
      * Attempt to retrieve data from the request.
      *
      * Data which is not found in the request parameters will
@@ -193,6 +170,17 @@ class Request
      * @param string|array $item The items to output
      * @param mixed $default The default value to return if no data is available
      */
+    public static function query($item = null, $default = null)
+    {
+        return \Leaf\Anchor::deepGet($_GET, $item) ?? $default;
+    }
+
+    /**
+     * Return only get request data
+     *
+     * @param string|array $item The items to output
+     * @param mixed $default The default value to return if no data is available
+     */
     public static function postData($item = null, $default = null)
     {
         return \Leaf\Anchor::deepGet($_POST, $item) ?? $default;
@@ -201,8 +189,7 @@ class Request
     /**
      * Returns request data
      *
-     * This method returns data passed into the request (request or form data).
-     * This method returns get, post, put patch, delete or raw faw form data or NULL
+     * This method returns get, post, put patch, delete or raw form data or NULL
      * if the data isn't found.
      *
      * @param array|string $params The parameter(s) to return
@@ -221,6 +208,38 @@ class Request
         }
 
         return $data;
+    }
+
+    /**
+     * Returns request data
+     *
+     * This method returns get, post, put patch, delete or raw form data or NULL
+     * if the data isn't found.
+     *
+     * @param string|null $key
+     * @param mixed|null $default
+     *
+     * @return mixed
+     */
+    public static function params(string $key = null, $default = null)
+    {
+        return static::get($key) ?? $default;
+    }
+    
+    /**
+     * Returns request data
+     *
+     * This method returns get, post, put patch, delete or raw form data or NULL
+     * if the data isn't found.
+     *
+     * @param string|null $key
+     * @param mixed|null $default
+     *
+     * @return mixed
+     */
+    public static function getOrDefault(string $key = null, $default = null)
+    {
+        return static::get($key) ?? $default;
     }
 
     /**
