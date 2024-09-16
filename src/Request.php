@@ -25,11 +25,8 @@ class Request
     const METHOD_OPTIONS = 'OPTIONS';
     const METHOD_OVERRIDE = '_METHOD';
 
-    /**
-     * @var array
-     */
-    protected static $formDataMediaTypes = ['application/x-www-form-urlencoded'];
     protected static $errors = [];
+    protected static $formDataMediaTypes = ['application/x-www-form-urlencoded'];
 
     /**
      * Get HTTP method
@@ -351,6 +348,18 @@ class Request
     public static function user()
     {
         return static::auth()->user();
+    }
+
+    /**
+     * Get data passed from the previous middleware
+     * 
+     * @param string|null $key The key to get from the middleware data
+     */
+    public static function next($key = null)
+    {
+        $middlewareData = \Leaf\Config::getStatic('middleware.data');
+
+        return $key ? $middlewareData[$key] : $middlewareData;
     }
 
     /**
