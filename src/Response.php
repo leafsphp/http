@@ -98,6 +98,21 @@ class Response
 
         $this->send();
     }
+    
+    /**
+     * Output js script
+     * 
+     * @param string $data The data to output
+     * @param int $code The response status code
+     */
+    public function js(string $data, int $code = 200)
+    {
+        $this->status = $code;
+        $this->headers['Content-Type'] = 'text/javascript';
+        $this->content = $data;
+
+        $this->send();
+    }
 
     /**
      * Output json encoded data with an HTTP code/message
