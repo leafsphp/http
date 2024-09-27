@@ -55,6 +55,21 @@ class Response
     }
 
     /**
+     * Output any text
+     * 
+     * @param string $data The data to output
+     * @param int $code The response status code
+     */
+    public function echo(string $data, int $code = 200)
+    {
+        $this->status = $code;
+        $this->headers['Content-Type'] ??= 'text/plain';
+        $this->content = $data;
+
+        $this->send();
+    }
+
+    /**
      * Output plain text
      *
      * @param mixed $data The data to output
