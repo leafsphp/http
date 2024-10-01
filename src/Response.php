@@ -278,6 +278,17 @@ EOT;
         Headers::set('Location', $url, true, $status);
     }
 
+
+    /**
+     * Pass data to the route handler
+     * 
+     * @param mixed $data The data to pass
+     */
+    public function next($data)
+    {
+        \Leaf\Config::set('middleware.data', $data);
+    }
+
     /**
      * Force set HTTP status code
      *
