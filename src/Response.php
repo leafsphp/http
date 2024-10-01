@@ -278,7 +278,6 @@ EOT;
         Headers::set('Location', $url, true, $status);
     }
 
-
     /**
      * Pass data to the route handler
      * 
