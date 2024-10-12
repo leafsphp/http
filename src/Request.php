@@ -407,9 +407,9 @@ class Request
                 return false;
             }
         }
-
-        $config['unique'] = true;
+        
         $fileSystem = new \Leaf\FS;
+        (isset($config['rename']) || $config['rename']) ?: $config['unique'] = true;
         $uploadedFile = $fileSystem->uploadFile(
             $file,
             preg_replace(
