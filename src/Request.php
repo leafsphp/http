@@ -409,7 +409,7 @@ class Request
         }
         
         $fileSystem = new \Leaf\FS;
-        (isset($config['rename']) || $config['rename']) ?: $config['unique'] = true;
+        if(!isset($config['rename']) || !$config['rename']) $config['unique'] = true;
         $uploadedFile = $fileSystem->uploadFile(
             $file,
             preg_replace(
