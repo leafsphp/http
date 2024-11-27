@@ -234,7 +234,7 @@ class Request
      *
      * @return mixed
      */
-    public static function params(string $key = null, $default = null)
+    public static function params(?string $key = null, $default = null)
     {
         return static::get($key) ?? $default;
     }
@@ -250,7 +250,7 @@ class Request
      *
      * @return mixed
      */
-    public static function getOrDefault(string $key = null, $default = null)
+    public static function getOrDefault(?string $key = null, $default = null)
     {
         return static::get($key) ?? $default;
     }
@@ -300,7 +300,7 @@ class Request
      * @param string|null $key
      * @return array|string|null
      */
-    public static function cookies(string $key = null)
+    public static function cookies(?string $key = null)
     {
         return $key === null ?
             Cookie::all() :
