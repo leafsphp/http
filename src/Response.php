@@ -186,7 +186,7 @@ EOT;
      * @param string|null $name The of the file as shown to user
      * @param int $code The response status code
      */
-    public function download(string $file, string $name = null, int $code = 200)
+    public function download(string $file, ?string $name = null, int $code = 200)
     {
         $this->status = $code;
 
@@ -356,7 +356,7 @@ EOT;
      *
      * @return Response
      */
-    public function withCookie(string $name, string $value, int $expire = null): Response
+    public function withCookie(string $name, string $value, ?int $expire = null): Response
     {
         $this->cookies[$name] = [$value, $expire ?? (time() + 604800)];
 
