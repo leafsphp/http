@@ -598,7 +598,7 @@ class Request
     }
 
     /**
-     * Get Script Name (physical path)
+     * Get Script Name
      * @return string
      */
     public static function getScriptName(): string
@@ -607,12 +607,26 @@ class Request
     }
 
     /**
-     * Get Path (physical path + virtual path)
+     * Get physical path
+     * @return string
+     */
+    public static function getPhysicalPath(): string
+    {
+        return dirname($_SERVER['SCRIPT_NAME']);
+    }
+
+    /**
+     * Get Path
      * @return string
      */
     public static function getPath(): string
     {
-        return static::getScriptName() . static::getPathInfo();
+        $physicalPath = static::getPhysicalPath();
+
+        return substr(
+            parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH),
+            $physicalPath == '/' ? 0 : strlen($physicalPath)
+        );
     }
 
     /**
@@ -622,6 +636,15 @@ class Request
     public static function getPathInfo(): ?string
     {
         return $_SERVER['REQUEST_URI'] ?? null;
+    }
+
+    /**
+     * Get query string
+     * @return string|null
+     */
+    public static function getQueryString(): ?string
+    {
+        return $_SERVER['QUERY_STRING'] ?? null;
     }
 
     /**
