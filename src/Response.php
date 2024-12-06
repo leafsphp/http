@@ -277,7 +277,7 @@ EOT;
     public function redirect($url, int $status = 302, bool $exit = true)
     {
         if (is_array($url)) {
-            $url = app()->route($url[0]);
+            $url = app()->route($url[0], ...array_slice($url, 1));
         }
 
         if (class_exists('Leaf\App') && !strpos($url, '://')) {
