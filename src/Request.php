@@ -438,13 +438,13 @@ class Request
             }
         }
 
-        $fileSystem = new \Leaf\FS;
+        $fileSystem = new \Leaf\FS\File;
 
         if (!isset($config['rename']) || !$config['rename']) {
             $config['unique'] = true;
         }
 
-        $uploadedFile = $fileSystem->uploadFile(
+        $uploadedFile = $fileSystem->upload(
             $file,
             preg_replace(
                 '/\/$/',
@@ -454,12 +454,7 @@ class Request
             $config
         );
 
-        if (!$uploadedFile) {
-            static::$errors = $fileSystem->errors();
-            return false;
-        }
-
-        return $fileSystem->uploadInfo($uploadedFile);
+        return $uploadedFile;
     }
 
     /**
@@ -472,8 +467,10 @@ class Request
      */
     public static function uploadAs(string $key, string $destination, string $name, array $config = [])
     {
-        $config['name'] = $name;
+        $fileExtension = pathinfo($_FILES[$key]['name'], PATHINFO_EXTENSION);
+        
         $config['rename'] = true;
+        $config['name'] = $name . '.' . $fileExtension;
 
         return static::upload($key, $destination, $config);
     }
