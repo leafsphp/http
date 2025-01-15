@@ -451,7 +451,7 @@ EOT;
         Headers::set($this->headers);
 
         // status
-        header(sprintf('%s %s %s', $this->httpVersion(), $this->status, Status::$statusTexts[$this->status]), true, $this->status);
+        header(sprintf('%s %s %s', $this->httpVersion(), $this->status, Status::$statusTexts[$this->status] ?? ''), true, $this->status);
 
         return $this;
     }
