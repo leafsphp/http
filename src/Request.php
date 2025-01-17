@@ -16,14 +16,14 @@ namespace Leaf\Http;
  */
 class Request
 {
-    const METHOD_HEAD = 'HEAD';
-    const METHOD_GET = 'GET';
-    const METHOD_POST = 'POST';
-    const METHOD_PUT = 'PUT';
-    const METHOD_PATCH = 'PATCH';
-    const METHOD_DELETE = 'DELETE';
-    const METHOD_OPTIONS = 'OPTIONS';
-    const METHOD_OVERRIDE = '_METHOD';
+    public const METHOD_HEAD = 'HEAD';
+    public const METHOD_GET = 'GET';
+    public const METHOD_POST = 'POST';
+    public const METHOD_PUT = 'PUT';
+    public const METHOD_PATCH = 'PATCH';
+    public const METHOD_DELETE = 'DELETE';
+    public const METHOD_OPTIONS = 'OPTIONS';
+    public const METHOD_OVERRIDE = '_METHOD';
 
     protected static $errors = [];
     protected static $formDataMediaTypes = ['application/x-www-form-urlencoded'];
@@ -45,7 +45,36 @@ class Request
      */
     public static function getMethod(): string
     {
+        if ($method = static::methodOverride()) {
+            return $method;
+        }
+
+        return static::getOriginalMethod();
+    }
+
+    /**
+     * Get original method
+     */
+    public static function getOriginalMethod(): string
+    {
         return $_SERVER['REQUEST_METHOD'];
+    }
+
+    /**
+     * Is this a method override request?
+     * @return string|null
+     */
+    public static function methodOverride()
+    {
+        if ($method = static::headers('X-Http-Method-Override')) {
+            return strtoupper($method);
+        }
+
+        if (static::getOriginalMethod() === 'POST') {
+            return strtoupper(static::get(static::METHOD_OVERRIDE));
+        }
+
+        return null;
     }
 
     /**
@@ -468,7 +497,7 @@ class Request
     public static function uploadAs(string $key, string $destination, string $name, array $config = [])
     {
         $fileExtension = pathinfo($_FILES[$key]['name'], PATHINFO_EXTENSION);
-        
+
         $config['rename'] = true;
         $config['name'] = $name . '.' . $fileExtension;
 
