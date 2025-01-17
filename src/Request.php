@@ -45,11 +45,7 @@ class Request
      */
     public static function getMethod(): string
     {
-        if ($method = static::methodOverride()) {
-            return $method;
-        }
-
-        return static::getOriginalMethod();
+        return static::methodOverride() ?? static::getOriginalMethod();
     }
 
     /**
