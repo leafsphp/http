@@ -70,8 +70,8 @@ class Request
             return strtoupper($method);
         }
 
-        if (static::getOriginalMethod() === 'POST') {
-            return strtoupper(static::get(static::METHOD_OVERRIDE));
+        if (static::getOriginalMethod() === 'POST' && $method = static::get(static::METHOD_OVERRIDE)) {
+            return strtoupper($method);
         }
 
         return null;
@@ -499,7 +499,7 @@ class Request
         $fileExtension = pathinfo($_FILES[$key]['name'], PATHINFO_EXTENSION);
 
         $config['rename'] = true;
-        $config['name'] = "$name.$fileExtension";
+        $config['name'] = $name . '.' . $fileExtension;
 
         return static::upload($key, $destination, $config);
     }
