@@ -499,7 +499,7 @@ class Request
         $fileExtension = pathinfo($_FILES[$key]['name'], PATHINFO_EXTENSION);
 
         $config['rename'] = true;
-        $config['name'] = $name . '.' . $fileExtension;
+        $config['name'] = "$name.$fileExtension";
 
         return static::upload($key, $destination, $config);
     }
