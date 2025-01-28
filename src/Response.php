@@ -233,6 +233,33 @@ EOT;
     }
 
     /**
+     * Render a view file if a view engine is available
+     * 
+     * @param string $view The view file to render
+     * @param array $data The data to pass to the view
+     */
+    public function view(string $view, array $data = [])
+    {
+        if (!function_exists('view')) {
+            $this->markup(
+                view($view, $data),
+            );
+        }
+
+        if (app()->blade()) {
+            $this->markup(
+                app()->blade()->render($view, $data),
+            );
+        }
+
+        if (app()->template()) {
+            $this->markup(
+                app()->template()->render($view, $data),
+            );
+        }
+    }
+
+    /**
      * Output some data and break the application
      *
      * @param mixed $data The data to output
