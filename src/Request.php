@@ -725,7 +725,7 @@ class Request
      */
     public static function getUserAgent(): ?string
     {
-        return Headers::get('HTTP_USER_AGENT');
+        return Headers::get('USER-AGENT');
     }
 
     /**
