@@ -240,20 +240,20 @@ EOT;
      */
     public function view(string $view, array $data = [])
     {
-        if (!function_exists('view')) {
-            $this->markup(
+        if (function_exists('view')) {
+            return $this->markup(
                 view($view, $data),
             );
         }
 
         if (app()->blade()) {
-            $this->markup(
+            return $this->markup(
                 app()->blade()->render($view, $data),
             );
         }
 
         if (app()->template()) {
-            $this->markup(
+            return $this->markup(
                 app()->template()->render($view, $data),
             );
         }
