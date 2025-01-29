@@ -260,6 +260,17 @@ EOT;
     }
 
     /**
+     * Render a view file if a view engine is available
+     * 
+     * @param string $view The view file to render
+     * @param array $data The data to pass to the view
+     */
+    public function render(string $view, array $data = [])
+    {
+        $this->view($view, $data);
+    }
+
+    /**
      * Output some data and break the application
      *
      * @param mixed $data The data to output
