@@ -333,6 +333,17 @@ class Request
     }
 
     /**
+     * Display a flash message from the previous request
+     * 
+     * @param string|null $key The key to get from the flash data
+     * @return array|string|null
+     */
+    public static function flash(?string $key = null)
+    {
+        return \Leaf\Flash::display($key);
+    }
+
+    /**
      * Does the Request body contain parsed form data?
      * @return bool
      */
@@ -340,7 +351,7 @@ class Request
     {
         $method = static::getMethod();
 
-        return ($method === static::METHOD_POST && is_null(static::getContentType())) || in_array(static::getMediaType(), static::$formDataMediaTypes);
+        return ($method === static::METHOD_POST && static::getContentType() === null) || in_array(static::getMediaType(), static::$formDataMediaTypes);
     }
 
     /**
