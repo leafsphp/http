@@ -696,6 +696,15 @@ class Request
     }
 
     /**
+     * Get Full URL (scheme + host [ + port if non-standard ] + path + query string)
+     * @return string
+     */
+    public static function getFullUrl(): string
+    {
+        return static::getUrl() . static::getPathInfo() . (static::getQueryString() ? '?' . static::getQueryString() : '');
+    }
+
+    /**
      * Get IP
      * @return string
      */
