@@ -677,7 +677,7 @@ class Request
      */
     public static function getQueryString(): ?string
     {
-        return $_SERVER['QUERY_STRING'] ?? null;
+        return $_SERVER['QUERY_STRING'] ?? parse_url($_SERVER['REQUEST_URI'], PHP_URL_QUERY) ?? null;
     }
 
     /**
