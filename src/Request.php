@@ -334,7 +334,7 @@ class Request
 
     /**
      * Display a flash message from the previous request
-     * 
+     *
      * @param string|null $key The key to get from the flash data
      * @return array|string|null
      */
@@ -463,6 +463,22 @@ class Request
         if (!$file) {
             static::$errors['upload'] = 'No file was uploaded.';
             return false;
+        }
+
+        if (is_array($file['name'])) {
+            $uploadedFiles = [];
+
+            foreach ($file['name'] as $fileKey => $image) {
+                $uploadedFiles[] = \Leaf\FS\File::upload([
+                    'name' => $file['name'][$fileKey],
+                    'type' => $file['type'][$fileKey],
+                    'tmp_name' => $file['tmp_name'][$fileKey],
+                    'error' => $file['error'][$fileKey],
+                    'size' => $file['size'][$fileKey],
+                ], $destination, $config);
+            }
+
+            return $uploadedFiles;
         }
 
         if (isset($config['extensions'])) {
