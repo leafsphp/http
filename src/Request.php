@@ -768,7 +768,14 @@ class Request
         ];
 
         try {
-            $res = file_get_contents("http://ip-api.com/json/{$response['ip']}?fields=status,continent,continentCode,country,countryCode,region,regionName,city,zip,lat,lon,timezone,currency,query");
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, "http://ip-api.com/json/{$ip}?fields=status,continent,continentCode,country,countryCode,region,regionName,city,zip,lat,lon,timezone,currency,query");
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 5);
+
+            $res = curl_exec($ch);
+            curl_close($ch);
+
             $data = json_decode($res ?? '{}', true);
 
             if (($data['status'] ?? false) === 'success') {
