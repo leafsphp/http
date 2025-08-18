@@ -726,9 +726,12 @@ class Request
      */
     public static function getIp(): string
     {
-        return $_SERVER['HTTP_CLIENT_IP']
-            ?? $_SERVER['HTTP_X_FORWARDED_FOR']
-            ?? $_SERVER['REMOTE_ADDR'];
+        if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+            $ipAddresses = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
+            return trim($ipAddresses[0]); // Get the first IP in the list
+        }
+
+        return $_SERVER['REMOTE_ADDR'] ?? $_SERVER['HTTP_CLIENT_IP'];
     }
 
     /**
