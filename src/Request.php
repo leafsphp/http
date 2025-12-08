@@ -261,7 +261,7 @@ class Request
      */
     public static function params(?string $key = null, $default = null)
     {
-        return static::get($key) ?? $default;
+        return static::get($key) ?? is_callable($default) ? $default(static::body()) : $default;
     }
 
     /**
@@ -537,6 +537,18 @@ class Request
     }
 
     /**
+     * Check if content type matches
+     * @param string $type The content type to check for
+     * @return bool
+     */
+    public static function contentTypeIs(string $type): bool
+    {
+        $contentType = static::getContentType();
+
+        return $contentType && stripos($contentType, $type) === 0;
+    }
+
+    /**
      * Get Media Type (type/subtype within Content Type header)
      * @return string|null
      */
@@ -726,12 +738,9 @@ class Request
      */
     public static function getIp(): string
     {
-        if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
-            $ipAddresses = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
-            return trim($ipAddresses[0]); // Get the first IP in the list
-        }
-
-        return $_SERVER['REMOTE_ADDR'] ?? $_SERVER['HTTP_CLIENT_IP'];
+        return $_SERVER['HTTP_CLIENT_IP']
+            ?? $_SERVER['HTTP_X_FORWARDED_FOR']
+            ?? $_SERVER['REMOTE_ADDR'];
     }
 
     /**
@@ -796,7 +805,7 @@ class Request
      */
     public static function getReferrer(): ?string
     {
-        return Headers::get('HTTP_REFERER');
+        return $_SERVER['HTTP_REFERER'] ?? null;
     }
 
     /**
