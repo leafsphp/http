@@ -230,13 +230,17 @@ class Request
      * This method returns get, post, put patch, delete or raw form data or NULL
      * if the data isn't found.
      *
-     * @param array|string $params The parameter(s) to return
+     * @param array|string|callable $params The parameter(s) to return
      * @param bool $safeData Sanitize output
      */
     public static function get($params, bool $safeData = true)
     {
         if (is_string($params)) {
             return static::body($safeData)[$params] ?? null;
+        }
+
+        if (is_callable($params)) {
+            return $params(static::body($safeData));
         }
 
         $data = [];
