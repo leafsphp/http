@@ -235,12 +235,12 @@ class Request
      */
     public static function get($params, bool $safeData = true)
     {
-        if (is_string($params)) {
-            return static::body($safeData)[$params] ?? null;
-        }
-
         if (is_callable($params)) {
             return $params(static::body($safeData));
+        }
+
+        if (is_string($params)) {
+            return static::body($safeData)[$params] ?? null;
         }
 
         $data = [];
@@ -265,7 +265,7 @@ class Request
      */
     public static function params(?string $key = null, $default = null)
     {
-        return static::get($key) ?? is_callable($default) ? $default(static::body()) : $default;
+        return static::get($key) ?? (is_callable($default) ? $default(static::body()) : $default);
     }
 
     /**
