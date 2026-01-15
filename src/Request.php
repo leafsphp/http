@@ -235,21 +235,21 @@ class Request
      */
     public static function get($params, bool $safeData = true)
     {
-        if (is_callable($params)) {
-            return $params(static::body($safeData));
-        }
-
         if (is_string($params)) {
             return static::body($safeData)[$params] ?? null;
         }
 
-        $data = [];
+        if (is_array($params)) {
+            $data = [];
 
-        foreach ($params as $param) {
-            $data[$param] = static::get($param, $safeData);
+            foreach ($params as $param) {
+                $data[$param] = static::get($param, $safeData);
+            }
+
+            return $data;
         }
 
-        return $data;
+        return $params(static::body($safeData));
     }
 
     /**
