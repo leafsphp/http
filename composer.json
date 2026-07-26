@@ -35,5 +35,10 @@
         "leafs/anchor": "*",
         "leafs/form": "^3.0",
         "leafs/fs": "^4.0"
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-v5.x": "5.0.x-dev"
+        }
     }
 }
