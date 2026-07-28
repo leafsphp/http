@@ -40,5 +40,21 @@
         "branch-alias": {
             "dev-v5.x": "5.0.x-dev"
         }
+    },
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "^3.95",
+        "pestphp/pest": "*",
+        "leafs/alchemy": "v5.x-dev"
+    },
+    "config": {
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    },
+    "scripts": {
+        "test": "./vendor/bin/alchemy test",
+        "lint": "./vendor/bin/alchemy lint",
+        "fmt": "./vendor/bin/alchemy fmt",
+        "ci": "./vendor/bin/alchemy ci"
     }
 }

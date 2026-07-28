@@ -204,6 +204,8 @@ EOT;
         if (!file_exists($file)) {
             Headers::contentHtml();
             trigger_error("$file not found. Confirm your file path.");
+
+            return;
         }
 
         $this->headers = array_merge($this->headers, [
@@ -213,7 +215,7 @@ EOT;
             'Cache-Control' => 'must-revalidate',
             'Content-Description' => 'File Transfer',
             'Content-Type' => 'application/octet-stream',
-            'Content-Disposition' => 'attachment; filename="' . $name ?? basename($file) . '"',
+            'Content-Disposition' => 'attachment; filename="' . ($name ?? basename($file)) . '"',
         ]);
 
         $this->content = $file;
@@ -234,7 +236,7 @@ EOT;
 
     /**
      * Render a view file if a view engine is available
-     * 
+     *
      * @param string $view The view file to render
      * @param array $data The data to pass to the view
      */
@@ -244,6 +246,12 @@ EOT;
             return $this->markup(
                 view($view, $data),
             );
+        }
+
+        if (!function_exists('app')) {
+            trigger_error('No view engine found. response()->view() needs Leaf or a view() helper to render views.');
+
+            return;
         }
 
         if (app()->blade()) {
@@ -261,7 +269,7 @@ EOT;
 
     /**
      * Render a view file if a view engine is available
-     * 
+     *
      * @param string $view The view file to render
      * @param array $data The data to pass to the view
      */
@@ -272,7 +280,7 @@ EOT;
 
     /**
      * Render an inertia view file if inertia is installed
-     * 
+     *
      * @param string $view The view file to render
      * @param array $data The data to pass to the view
      */
@@ -339,6 +347,7 @@ EOT;
 
         if (class_exists('Leaf\Eien\Server') && PHP_SAPI === 'cli') {
             \Leaf\Config::set('response.redirect', [$url, $status]);
+
             return;
         }
 
@@ -367,8 +376,10 @@ EOT;
      */
     public function status(?int $code = null): Response
     {
-        $this->status = $code;
-        Headers::status($code);
+        if ($code !== null) {
+            $this->status = $code;
+            Headers::status($code);
+        }
 
         return $this;
     }
@@ -378,7 +389,7 @@ EOT;
      *
      * @param string|array $name Header name
      * @param string|null $value Header value
-     * @param boolean $replace Replace existing header
+     * @param bool $replace Replace existing header
      * @param int $httpCode The HTTP status code
      */
     public function withHeader($name, ?string $value = '', bool $replace = true, int $httpCode = 200): Response
@@ -399,6 +410,7 @@ EOT;
 
         if (is_array($name)) {
             $this->headers = array_merge($this->headers, $name);
+
             return $this;
         }
 
@@ -466,6 +478,8 @@ EOT;
             foreach ($key as $k => $v) {
                 $this->withFlash($k, $v);
             }
+
+            return $this;
         }
 
         \Leaf\Flash::set($value, $key);
@@ -493,6 +507,7 @@ EOT;
     {
         if (class_exists('Leaf\Eien\Server') && PHP_SAPI === 'cli') {
             \Leaf\Config::set('response.headers', $this->headers);
+
             return $this;
         }
 
@@ -516,6 +531,7 @@ EOT;
     {
         if (class_exists('Leaf\Eien\Server') && PHP_SAPI === 'cli') {
             \Leaf\Config::set('response.cookies', $this->cookies);
+
             return $this;
         }
 
