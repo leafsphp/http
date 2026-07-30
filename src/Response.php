@@ -36,6 +36,11 @@ class Response
     protected $status = 200;
 
     /**
+     * @var array|null [start byte, length] window for range downloads
+     */
+    protected $downloadRange = null;
+
+    /**
      * @var string HTTP Version
      */
     protected $version;
@@ -208,10 +213,43 @@ EOT;
             return;
         }
 
+        $size = filesize($file);
+        $start = 0;
+        $length = $size;
+
+        $range = $_SERVER['HTTP_RANGE'] ?? null;
+
+        if ($code === 200 && $range && preg_match('/^bytes=(\d*)-(\d*)$/', trim($range), $rangeParts) && ($rangeParts[1] !== '' || $rangeParts[2] !== '')) {
+            if ($rangeParts[1] === '') {
+                // suffix range: the last N bytes
+                $start = max(0, $size - (int) $rangeParts[2]);
+                $end = $size - 1;
+            } else {
+                $start = (int) $rangeParts[1];
+                $end = $rangeParts[2] === '' ? $size - 1 : min((int) $rangeParts[2], $size - 1);
+            }
+
+            if ($start >= $size || $start > $end) {
+                $this->status = 416;
+                $this->headers = array_merge($this->headers, [
+                    'Accept-Ranges' => 'bytes',
+                    'Content-Range' => "bytes */$size",
+                ]);
+                $this->content = '';
+
+                return $this->send();
+            }
+
+            $this->status = 206;
+            $length = $end - $start + 1;
+            $this->headers['Content-Range'] = "bytes $start-$end/$size";
+        }
+
         $this->headers = array_merge($this->headers, [
             'Expires' => '0',
             'Pragma' => 'public',
-            'Content-Length' => filesize($file),
+            'Accept-Ranges' => 'bytes',
+            'Content-Length' => $length,
             'Cache-Control' => 'must-revalidate',
             'Content-Description' => 'File Transfer',
             'Content-Type' => 'application/octet-stream',
@@ -219,6 +257,7 @@ EOT;
         ]);
 
         $this->content = $file;
+        $this->downloadRange = [$start, $length];
 
         $this->send();
     }
@@ -239,12 +278,14 @@ EOT;
      *
      * @param string $view The view file to render
      * @param array $data The data to pass to the view
+     * @param int $code The response status code
      */
-    public function view(string $view, array $data = [])
+    public function view(string $view, array $data = [], int $code = 200)
     {
         if (function_exists('view')) {
             return $this->markup(
                 view($view, $data),
+                $code,
             );
         }
 
@@ -257,12 +298,14 @@ EOT;
         if (app()->blade()) {
             return $this->markup(
                 app()->blade()->render($view, $data),
+                $code,
             );
         }
 
         if (app()->template()) {
             return $this->markup(
                 app()->template()->render($view, $data),
+                $code,
             );
         }
     }
@@ -272,10 +315,11 @@ EOT;
      *
      * @param string $view The view file to render
      * @param array $data The data to pass to the view
+     * @param int $code The response status code
      */
-    public function render(string $view, array $data = [])
+    public function render(string $view, array $data = [], int $code = 200)
     {
-        $this->view($view, $data);
+        $this->view($view, $data, $code);
     }
 
     /**
@@ -552,7 +596,28 @@ EOT;
     public function sendContent(): Response
     {
         if (strpos($this->headers['Content-Disposition'] ?? '', 'attachment') !== false) {
-            readfile($this->content);
+            $handle = fopen($this->content, 'rb');
+
+            if ($handle !== false) {
+                [$start, $remaining] = $this->downloadRange ?? [0, filesize($this->content)];
+
+                fseek($handle, $start);
+
+                // stream in 1MB pieces — memory stays flat for any file size
+                while ($remaining > 0 && !feof($handle)) {
+                    $chunk = fread($handle, min(1048576, $remaining));
+
+                    if ($chunk === false || $chunk === '') {
+                        break;
+                    }
+
+                    echo $chunk;
+
+                    $remaining -= strlen($chunk);
+                }
+
+                fclose($handle);
+            }
         } else {
             echo $this->content;
         }
