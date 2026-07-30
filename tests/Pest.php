@@ -122,3 +122,39 @@ uses()
         fakeRequest();
     })
     ->in(__DIR__);
+
+/**
+ * Fire a real HTTP request and return status, raw headers and raw body —
+ * for endpoints that don't reply with JSON (downloads, rendered views).
+ */
+function callRaw(string $path, array $options = []): array
+{
+    bootTestServer();
+
+    $ch = curl_init();
+
+    curl_setopt_array($ch, [
+        CURLOPT_URL => serverUrl($path),
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_HEADER => true,
+        CURLOPT_TIMEOUT => 5,
+        CURLOPT_CUSTOMREQUEST => $options['method'] ?? 'GET',
+        CURLOPT_HTTPHEADER => $options['headers'] ?? [],
+    ]);
+
+    $response = curl_exec($ch);
+    $error = curl_error($ch);
+    $status = curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
+    $headerSize = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
+    curl_close($ch);
+
+    if ($error) {
+        throw new RuntimeException("test request failed: $error");
+    }
+
+    return [
+        'status' => $status,
+        'headers' => substr($response, 0, $headerSize),
+        'body' => substr($response, $headerSize),
+    ];
+}

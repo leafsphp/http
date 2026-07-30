@@ -9,7 +9,50 @@ require __DIR__ . '/../vendor/autoload.php';
 use Leaf\Http\Headers;
 use Leaf\Http\Request;
 
+use Leaf\Http\Response;
+
 $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+
+// response()->view() falls back to a global view() helper when present
+function view(string $view, array $data = []): string
+{
+    return "<h1>rendered:$view</h1>";
+}
+
+if ($path === '/object') {
+    header('Content-Type: application/json');
+    $object = Leaf\Http\Request::object(false);
+
+    echo json_encode([
+        'isObject' => is_object($object),
+        'name' => $object->name ?? null,
+        'nested' => $object->meta->tag ?? null,
+        'list' => $object->tags ?? null,
+    ]);
+
+    return;
+}
+
+if ($path === '/view-status') {
+    (new Response())->view('demo', [], 404);
+
+    return;
+}
+
+if ($path === '/render-status') {
+    (new Response())->render('demo', [], 201);
+
+    return;
+}
+
+if ($path === '/download') {
+    $fixture = sys_get_temp_dir() . '/leafhttp-range-fixture.txt';
+    file_put_contents($fixture, '0123456789');
+
+    (new Response())->download($fixture, 'range.txt');
+
+    return;
+}
 
 header('Content-Type: application/json');
 
