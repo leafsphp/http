@@ -297,6 +297,19 @@ class Request
     }
 
     /**
+     * Get the request data as an object instead of an array —
+     * nested structures become objects too, lists stay arrays
+     *
+     * @param bool $safeData Sanitize output
+     *
+     * @return object
+     */
+    public static function object(bool $safeData = true)
+    {
+        return json_decode(json_encode((object) static::body($safeData)));
+    }
+
+    /**
      * Get all files passed into the request.
      *
      * @param array|string|null $filenames The file(s) you want to get
