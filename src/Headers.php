@@ -171,6 +171,81 @@ class Headers
         }
     }
 
+    /**
+     * Set common security headers in one call
+     *
+     * Pass `true` for the sensible defaults, or an array to pick your own
+     * values. Any option set to `false` is skipped.
+     *
+     * ```php
+     * Headers::security();
+     * Headers::security(['frameOptions' => 'SAMEORIGIN', 'hsts' => false]);
+     * ```
+     *
+     * @param array|bool $options Headers to set
+     */
+    public static function security($options = true): void
+    {
+        $defaults = [
+            'frameOptions' => 'DENY',
+            'contentTypeOptions' => 'nosniff',
+            'referrerPolicy' => 'no-referrer-when-downgrade',
+            'permissionsPolicy' => false,
+            'csp' => false,
+            'hsts' => false,
+        ];
+
+        $options = array_merge($defaults, is_array($options) ? $options : []);
+
+        $headers = [
+            'frameOptions' => 'X-Frame-Options',
+            'contentTypeOptions' => 'X-Content-Type-Options',
+            'referrerPolicy' => 'Referrer-Policy',
+            'permissionsPolicy' => 'Permissions-Policy',
+            'csp' => 'Content-Security-Policy',
+        ];
+
+        foreach ($headers as $option => $header) {
+            if ($options[$option] === false || $options[$option] === null) {
+                continue;
+            }
+
+            self::set($header, self::policyValue($options[$option]));
+        }
+
+        if ($options['hsts'] !== false && $options['hsts'] !== null) {
+            // browsers ignore HSTS over plain http, and sending it there is
+            // how you lock yourself out of a domain you can't serve securely
+            if (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') {
+                self::set('Strict-Transport-Security', is_string($options['hsts'])
+                    ? $options['hsts']
+                    : 'max-age=31536000; includeSubDomains');
+            }
+        }
+    }
+
+    /**
+     * Build a policy header value from a string or a directive map
+     *
+     * @param string|array $value The value or directives to build from
+     */
+    protected static function policyValue($value): string
+    {
+        if (!is_array($value)) {
+            return (string) $value;
+        }
+
+        $directives = [];
+
+        foreach ($value as $directive => $sources) {
+            $directives[] = is_int($directive)
+                ? $sources
+                : trim($directive . ' ' . (is_array($sources) ? implode(' ', $sources) : $sources));
+        }
+
+        return implode('; ', $directives);
+    }
+
     protected static function findHeaders()
     {
         if (function_exists('getallheaders') && \getallheaders()) {
