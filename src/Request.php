@@ -338,14 +338,26 @@ class Request
      * This method returns a key-value array of Cookie data sent in the HTTP request, or
      * the value of an array key if requested. If the array key does not exist, NULL is returned.
      *
-     * @param string|null $key
+     * @param string|array|null $key A cookie name, a list of cookie names, or null for all cookies
      * @return array|string|null
      */
-    public static function cookies(?string $key = null)
+    public static function cookies($key = null)
     {
-        return $key === null ?
-            Cookie::all() :
-            Cookie::get($key);
+        if ($key === null) {
+            return Cookie::all();
+        }
+
+        if (is_array($key)) {
+            $cookies = [];
+
+            foreach ($key as $name) {
+                $cookies[$name] = Cookie::get($name);
+            }
+
+            return $cookies;
+        }
+
+        return Cookie::get($key);
     }
 
     /**
@@ -356,7 +368,7 @@ class Request
      */
     public static function flash(?string $key = null)
     {
-        return \Leaf\Flash::display($key);
+        return \Leaf\Flash::display($key ?? 'default');
     }
 
     /**
