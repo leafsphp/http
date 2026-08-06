@@ -45,6 +45,50 @@ if ($path === '/render-status') {
     return;
 }
 
+if ($path === '/security-defaults') {
+    (new Response())->security();
+    echo 'ok';
+
+    return;
+}
+
+if ($path === '/security-custom') {
+    (new Response())->security([
+        'frameOptions' => 'SAMEORIGIN',
+        'referrerPolicy' => false,
+        'csp' => ['default-src' => "'self'", 'img-src' => ["'self'", 'data:']],
+        'permissionsPolicy' => 'geolocation=()',
+    ]);
+    echo 'ok';
+
+    return;
+}
+
+if ($path === '/security-hsts') {
+    (new Response())->security(['hsts' => true]);
+    echo 'ok';
+
+    return;
+}
+
+if ($path === '/security-chain-json') {
+    (new Response())->security()->json(['ok' => true], 201);
+
+    return;
+}
+
+if ($path === '/security-chain-status-first') {
+    (new Response())->status(404)->security()->json(['missing' => true], 404);
+
+    return;
+}
+
+if ($path === '/security-chain-header') {
+    (new Response())->security()->withHeader('X-Custom', 'yes')->json(['ok' => true]);
+
+    return;
+}
+
 if ($path === '/download') {
     $fixture = sys_get_temp_dir() . '/leafhttp-range-fixture.txt';
     file_put_contents($fixture, '0123456789');

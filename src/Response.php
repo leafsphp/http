@@ -429,6 +429,23 @@ EOT;
     }
 
     /**
+     * Set common security headers on the response
+     *
+     * ```php
+     * response()->security();
+     * response()->security(['csp' => ['default-src' => "'self'"]]);
+     * ```
+     *
+     * @param array|bool $options Headers to set, or true for the defaults
+     */
+    public function security($options = true): Response
+    {
+        Headers::security($options);
+
+        return $this;
+    }
+
+    /**
      * set header
      *
      * @param string|array $name Header name
