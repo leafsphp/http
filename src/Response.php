@@ -511,6 +511,14 @@ EOT;
      */
     public function withoutCookie($name): Response
     {
+        if (is_array($name)) {
+            foreach ($name as $cookie) {
+                $this->withoutCookie($cookie);
+            }
+
+            return $this;
+        }
+
         $this->cookies[$name] = ['', -1];
 
         if (class_exists('Leaf\Eien\Server') && PHP_SAPI === 'cli') {
