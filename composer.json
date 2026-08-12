@@ -33,19 +33,14 @@
     "prefer-stable": true,
     "require": {
         "php": "^8.2",
-        "leafs/anchor": "*",
-        "leafs/form": "*",
-        "leafs/fs": "*"
-    },
-    "extra": {
-        "branch-alias": {
-            "dev-v5.x": "5.0.x-dev"
-        }
+        "leafs/anchor": "^5.0",
+        "leafs/form": "^5.0",
+        "leafs/fs": "^5.0"
     },
     "require-dev": {
-        "friendsofphp/php-cs-fixer": "^3.95",
+        "friendsofphp/php-cs-fixer": "*",
         "pestphp/pest": "*",
-        "leafs/alchemy": "v5.x-dev"
+        "leafs/alchemy": "^5.0"
     },
     "config": {
         "allow-plugins": {
