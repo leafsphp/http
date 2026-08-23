@@ -289,25 +289,47 @@ EOT;
             );
         }
 
-        if (!function_exists('app')) {
-            trigger_error('No view engine found. response()->view() needs Leaf or a view() helper to render views.');
+        $engine = $this->resolveViewEngine();
+
+        if ($engine === null) {
+            trigger_error('No view engine found. response()->view() needs Leaf with an attached view engine (attachView()) or a view() helper to render views.');
 
             return;
         }
 
-        if (app()->blade()) {
-            return $this->markup(
-                app()->blade()->render($view, $data),
-                $code,
-            );
+        return $this->markup(
+            $engine->render($view, $data),
+            $code,
+        );
+    }
+
+    /**
+     * Find an attached view engine without triggering App::__call,
+     * which throws when the named engine is not attached.
+     *
+     * Order: blade, template (BareUI), then any other attached engine with a render() method.
+     */
+    protected function resolveViewEngine()
+    {
+        if (!class_exists('Leaf\Config')) {
+            return null;
         }
 
-        if (app()->template()) {
-            return $this->markup(
-                app()->template()->render($view, $data),
-                $code,
-            );
+        foreach (['blade', 'template'] as $name) {
+            $engine = \Leaf\Config::view($name);
+
+            if ($engine !== null) {
+                return $engine;
+            }
         }
+
+        foreach (\Leaf\Config::get() as $key => $value) {
+            if (strpos($key, 'views.') === 0 && is_object($value) && method_exists($value, 'render')) {
+                return $value;
+            }
+        }
+
+        return null;
     }
 
     /**
