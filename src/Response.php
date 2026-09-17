@@ -349,11 +349,12 @@ EOT;
      *
      * @param string $view The view file to render
      * @param array $data The data to pass to the view
+     * @param int $code The response status code (eg. 404 for a not-found page)
      */
-    public function inertia(string $view, array $data = [])
+    public function inertia(string $view, array $data = [], int $code = 200)
     {
         if (function_exists('inertia')) {
-            return inertia($view, $data);
+            return inertia($view, $data, $code);
         }
 
         trigger_error('Inertia not found. Run `leaf install inertia` or `composer require leafs/inertia`');

@@ -25,6 +25,27 @@ test('json can wrap the payload with the status code', function () {
     expect($output['status'])->toBe(['code' => 201, 'message' => 'Created']);
 });
 
+test('inertia forwards the view, props and status to the inertia helper', function () {
+    if (!function_exists('inertia')) {
+        function inertia(string $component, array $props = [], int $status = 200)
+        {
+            $GLOBALS['__inertiaCall'] = compact('component', 'props', 'status');
+        }
+    }
+
+    (new Response())->inertia('not-found', ['slug' => 'x'], 404);
+
+    expect($GLOBALS['__inertiaCall'])->toBe([
+        'component' => 'not-found',
+        'props' => ['slug' => 'x'],
+        'status' => 404,
+    ]);
+
+    (new Response())->inertia('home');
+
+    expect($GLOBALS['__inertiaCall']['status'])->toBe(200);
+});
+
 test('plain and markup set their content types', function () {
     $response = new Response();
 
