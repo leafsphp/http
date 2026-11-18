@@ -878,7 +878,8 @@ class Request
         return array_merge(
             static::$errors,
             static::$validator ? static::$validator->errors() : [],
-            class_exists('\Leaf\Auth') ? static::auth()->errors() : []
+            class_exists('\Leaf\Auth') ? static::auth()->errors() : [],
+            \Leaf\FS\File::errors()
         );
     }
 }
