@@ -121,3 +121,32 @@ test('files returns one, many, or all uploaded files', function () {
     expect(Request::files(['avatar', 'missing']))->toBe(['avatar' => ['name' => 'me.png'], 'missing' => null]);
     expect(Request::files())->toHaveKeys(['avatar', 'doc']);
 });
+
+test('errors includes failures recorded by the file system on upload', function () {
+    fakeRequest();
+
+    $errors = new ReflectionProperty(\Leaf\FS\File::class, 'errorsArray');
+    $errors->setValue(null, []);
+
+    $_FILES = ['avatar' => [
+        'name' => 'big.png',
+        'type' => 'image/png',
+        'tmp_name' => '/tmp/does-not-matter',
+        'error' => 0,
+        'size' => 5000,
+    ]];
+
+    expect(Request::upload('avatar', sys_get_temp_dir(), ['maxSize' => 100]))->toBeFalse();
+    expect(Request::errors())->toHaveKey('upload');
+
+    $errors->setValue(null, []);
+});
+
+test('errors includes the extension failure raised by Request::upload itself', function () {
+    fakeRequest();
+
+    $_FILES = ['doc' => ['name' => 'run.exe', 'type' => 'application/x-msdownload', 'tmp_name' => '/tmp/x', 'error' => 0, 'size' => 10]];
+
+    expect(Request::upload('doc', sys_get_temp_dir(), ['extensions' => ['pdf']]))->toBeFalse();
+    expect(Request::errors())->toHaveKey('upload');
+});
